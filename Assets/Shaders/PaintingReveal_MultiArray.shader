@@ -6,10 +6,9 @@ Shader "Custom/PaintingReveal_MultiArray"
         _Arr1 ("Frames Array 1", 2DArray) = "" {}
         _Arr2 ("Frames Array 2", 2DArray) = "" {}
         _Arr3 ("Frames Array 3", 2DArray) = "" {}
-        _Arr4 ("Frames Array 4", 2DArray) = "" {}
 
         _BatchSize ("Batch Size", Int) = 100
-        _TotalFrames ("Total Frames", Int) = 500
+        _TotalFrames ("Total Frames", Int) = 400
 
         _GlobalFrame ("Global Frame Index (float)", Float) = 0
         _Blend ("Blend", Range(0,1)) = 0
@@ -37,7 +36,6 @@ Shader "Custom/PaintingReveal_MultiArray"
             UNITY_DECLARE_TEX2DARRAY(_Arr1);
             UNITY_DECLARE_TEX2DARRAY(_Arr2);
             UNITY_DECLARE_TEX2DARRAY(_Arr3);
-            UNITY_DECLARE_TEX2DARRAY(_Arr4);
 
             sampler2D _BrushNoise;
             sampler2D _PaintMask;
@@ -86,7 +84,7 @@ Shader "Custom/PaintingReveal_MultiArray"
 
                 // Safety: clamp arrId to [0,4]
                 if (arrId < 0) arrId = 0;
-                if (arrId > 4) arrId = 4;
+                if (arrId > 3) arrId = 3;
 
                 // Sample depending on arrId
                 float3 uvw = float3(uv, idxIn);
@@ -104,7 +102,7 @@ Shader "Custom/PaintingReveal_MultiArray"
                     return UNITY_SAMPLE_TEX2DARRAY(_Arr3, uvw);
 
                 // default -> arr4
-                return UNITY_SAMPLE_TEX2DARRAY(_Arr4, uvw);
+                return UNITY_SAMPLE_TEX2DARRAY(_Arr0, uvw);
             }
 
             fixed4 frag(v2f i) : SV_Target

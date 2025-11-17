@@ -13,6 +13,15 @@ MonoBehaviour:
   m_Name: Valley_with_Ploughman
   m_EditorClassIdentifier: Assembly-CSharp::Work
   image: {fileID: 21300000, guid: d4c3cc9585774e040a3319eb4282b19d, type: 3}
+  texture:
+  - {fileID: 18700000, guid: 39f715af26923014ba104b3f8d386d6c, type: 2}
+  - {fileID: 18700000, guid: 986a4bbf301d1a140b9ff88264c381f2, type: 2}
+  - {fileID: 18700000, guid: bbdecd81f9ba6c14782e0a324daa681d, type: 2}
+  - {fileID: 18700000, guid: eed642a7f07a7954e8ff5c261e83d6fe, type: 2}
   workName: Valley with Ploughman Seen from Above
   author: Vicent Van Gogh
   age: 1889
+  awnsers:
+  - {fileID: 11400000, guid: 5a006dede46c7644e8f04e17696601f4, type: 2}
+  - {fileID: 11400000, guid: 6b5f882c4c2bf524ea63062b76916b15, type: 2}
+  - {fileID: 11400000, guid: 80f9b98750a72f944b6ff63f8aacf1b8, type: 2}

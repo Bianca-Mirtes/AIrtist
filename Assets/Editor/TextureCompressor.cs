@@ -4,7 +4,7 @@ using System.IO;
 
 public class TextureCompressor : EditorWindow
 {
-    string folderPath = "Assets/OGato/textures"; // caminho da pasta
+    string folderPath = "Assets/Starry_Night/1"; // caminho da pasta
 
     [MenuItem("Tools/Compress PNG Folder")]
     static void OpenWindow()

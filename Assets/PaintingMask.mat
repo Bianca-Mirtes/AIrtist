@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PaintingMask
-  m_Shader: {fileID: 4800000, guid: 9c9308d4d9cdb1640aafc7bb3f782b3b, type: 3}
+  m_Shader: {fileID: 4800000, guid: d8e63c59a830d584aa27395e15fb00d7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -25,19 +25,19 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _Arr0:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 18700000, guid: 4dbd2a38d35f47b4cbe52f1524af27b1, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Arr1:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 18700000, guid: 8c40693dc68a61d4690993006b8120eb, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Arr2:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 18700000, guid: 716d77fac0043c242ab8ad6df0b55419, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Arr3:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 18700000, guid: 881902e1e5f80b84cac783dc55de2903, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Arr4:

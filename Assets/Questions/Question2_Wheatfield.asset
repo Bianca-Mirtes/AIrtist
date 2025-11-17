@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6334982dcae08e4698af5d208c769f4, type: 3}
+  m_Name: Question2_Wheatfield
+  m_EditorClassIdentifier: 
+  description:
+  - "Van Gogh painted this broad field of wheat beneath a dark, unsettled sky while
+    he was in Auvers sur Oise in July 1890. He intended to express both the vitality
+    of the countryside and his own poignant inner feelings. He wrote of \u201Csadness,
+    extreme loneliness\u201D while also noting what he considered \u201Chealthy and
+    fortifying about the countryside.\u201D The painting shows a central red path
+    cutting through golden wheat toward a horizon under a storm filled sky, with
+    black crows flying above. The path seems unresolved, hinting at movement without
+    destination. The crows carry symbolic weight and are often read as signs of mortality
+    or transition."
+  - In summary, Wheatfield with Crows blends landscape and emotional intensity. It
+    offers a scene of rural life under conditions that feel charged and unsettled.
+    The technical features, including strong contrasts, textured surfaces, dynamic
+    marks, and a dominant sky, amplify the emotional content. Van Gogh uses the wheat
+    field and the flight of crows not simply to depict nature but to convey a journey,
+    a sense of isolation, and a life in transition.
+  awnsers:
+  - {fileID: 8300000, guid: 1e853977d752fda4a8b4e91e34dca774, type: 3}
+  - {fileID: 8300000, guid: 6676b89225481e242a37d48663ec910e, type: 3}

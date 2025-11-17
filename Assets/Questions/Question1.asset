@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6334982dcae08e4698af5d208c769f4, type: 3}
+  m_Name: Question1
+  m_EditorClassIdentifier: 
+  description:
+  - Vincent van Gogh was a Dutch painter born in 1853 in the Netherlands. He worked
+    for several years in art dealing before turning toward painting in his late twenties.
+    His earliest works were dark studies of rural life, but after moving to Paris
+    in 1886 he encountered Impressionist and Neo-Impressionist ideas that transformed
+    his use of color and brushwork.
+  - Van Gogh developed a highly personal style marked by vivid color, expressive
+    strokes, and a focus on landscapes, portraits, and scenes of everyday life. Although
+    he produced more than two thousand works, including over eight hundred oil paintings,
+    he sold very little during his lifetime. His emotional struggles were significant,
+    and he spent time in hospitals and asylums, continuing to paint even during these
+    difficult periods.
+  - He died in 1890 at the age of thirty seven. After his death his sister in law
+    helped promote his work, and he eventually became one of the most influential
+    and widely admired painters in Western art. His paintings are now recognized
+    for their emotional intensity, technical innovation, and lasting cultural impact.
+  awnsers:
+  - {fileID: 8300000, guid: 9fda646b25dfff04982f8bd3cf417574, type: 3}
+  - {fileID: 8300000, guid: 6290111a594ade94ca1ff9c475680910, type: 3}
+  - {fileID: 8300000, guid: 5eff975cbe32a65408a8b19bc08407d2, type: 3}

@@ -1,39 +1,42 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FrameBlender : MonoBehaviour
 {
-    public Material paintingMaterial;  // Material que usa PaintingRevealArray_Builtin.shader
+    public Material paintingMaterial;
 
     public float blendSpeed = 0.75f;
 
     private float currentBlend = 0f;
-    private int frameIndex = 0;
+    private int globalFrame = 0;  // 0–399
 
-    private const int maxFrames = 500;
-    public bool isPainting { set; get; } = false;
+    private const int batchSize = 100;
+    private const int totalFrames = 400;
+
+    public bool isPainting { get; set; } = false;
 
     void Update()
     {
-        if (isPainting)
+        if (!isPainting)
+            return;
+
+        // aumenta o blend progressivamente
+        currentBlend += Time.deltaTime * blendSpeed;
+        paintingMaterial.SetFloat("_Blend", currentBlend);
+
+        // terminou a transição?
+        if (currentBlend >= 1f)
         {
-            // aumenta o blend progressivamente
-            currentBlend += Time.deltaTime * blendSpeed;
-            paintingMaterial.SetFloat("_Blend", currentBlend);
+            currentBlend = 0f;
 
-            // terminou a transi��o?
-            if (currentBlend >= 1f)
-            {
-                currentBlend = 0f;
+            // avança para o próximo frame global
+            globalFrame++;
 
-                // avan�a para o pr�ximo frame
-                frameIndex++;
-
-                if (frameIndex >= maxFrames - 1)
-                    frameIndex = maxFrames - 2;  // evita ultrapassar o limite
-
-                paintingMaterial.SetFloat("_FrameIndex", frameIndex);
-            }
+            if (globalFrame >= totalFrames - 1)
+                globalFrame = totalFrames - 2; // trava antes do último para não estourar
         }
+
+        // enviar para o shader
+        paintingMaterial.SetInt("_GlobalFrame", globalFrame);
     }
 }
 

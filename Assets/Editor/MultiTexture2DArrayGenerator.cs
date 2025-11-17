@@ -5,7 +5,7 @@ using System.Linq;
 
 public class MultiTexture2DArrayGenerator : EditorWindow
 {
-    string folderPath = "Assets/Sprites/Painting1";
+    string folderPath = "Assets/Starry_Night/1";
     string outputFolder = "Assets/PaintingArrays";
     int batchSize = 100; // 100 frames por array
 
@@ -81,22 +81,33 @@ public class MultiTexture2DArrayGenerator : EditorWindow
                 string path = files[start + i];
                 Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
 
-                // Forçar leitura e formato correto
-                TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
-                if (importer != null)
+                // se a textura não tem o mesmo tamanho do primeiro, redimensiona
+                if (tex.width != width || tex.height != height)
                 {
-                    importer.isReadable = true;
-                    importer.textureCompression = TextureImporterCompression.Uncompressed;
-                    importer.alphaIsTransparency = true;
-                    importer.mipmapEnabled = false;
-                    importer.SaveAndReimport();
+                    Texture2D resized = new Texture2D(width, height, TextureFormat.RGBA32, false);
+                    // Bilinear scaling
+                    RenderTexture rt = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32);
+                    Graphics.Blit(tex, rt);
+                    RenderTexture prev = RenderTexture.active;
+                    RenderTexture.active = rt;
+                    resized.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                    resized.Apply();
+                    RenderTexture.active = prev;
+                    RenderTexture.ReleaseTemporary(rt);
+
+                    // set pixels e destrói tex temporária
+                    arr.SetPixels(resized.GetPixels(), i);
+                    DestroyImmediate(resized);
+                }
+                else
+                {
+                    arr.SetPixels(tex.GetPixels(), i);
                 }
 
-                // Copia a textura sem estourar memória
-                Texture2D readable = new Texture2D(tex.width, tex.height, TextureFormat.RGBA32, false);
-                Graphics.CopyTexture(tex, readable);
+                Resources.UnloadAsset(tex);
 
-                arr.SetPixels(readable.GetPixels(), i);
+                // libera a textura carregada
+                DestroyImmediate(tex);
             }
 
             arr.Apply();

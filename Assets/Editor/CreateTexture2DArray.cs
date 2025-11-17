@@ -5,7 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 public class CreateTexture2DArray : EditorWindow
 {
-    string folderPath = "Assets/OGato/textures"; // pasta onde estão os PNGs
+    string folderPath = "Assets/Starry_Night/1"; // pasta onde estão os PNGs
     string outputPath = "Assets/PaintingFrames.asset";
     int forceWidth = 0;   // opcional: força largura (0 = usa do primeiro)
     int forceHeight = 0;  // opcional: força altura (0 = usa do primeiro)
@@ -68,7 +68,7 @@ public class CreateTexture2DArray : EditorWindow
         textureArray.filterMode = FilterMode.Bilinear;
 
         // Preenche camada por camada
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < (count-100); i++)
         {
             string path = files[i];
             byte[] bytes = File.ReadAllBytes(path);
@@ -103,6 +103,8 @@ public class CreateTexture2DArray : EditorWindow
             {
                 textureArray.SetPixels(tex.GetPixels(), i);
             }
+
+            Resources.UnloadAsset(tex);
 
             // libera a textura carregada
             DestroyImmediate(tex);
