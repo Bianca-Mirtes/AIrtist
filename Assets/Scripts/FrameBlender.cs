@@ -30,6 +30,7 @@ public class FrameBlender : MonoBehaviour
 
             // avança para o próximo frame global
             globalFrame++;
+            FindFirstObjectByType<PaintingController>().NextFrame();
 
             if (globalFrame >= totalFrames - 1)
                 globalFrame = totalFrames - 2; // trava antes do último para não estourar

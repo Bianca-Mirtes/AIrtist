@@ -11,56 +11,37 @@ public class ExplanationController : MonoBehaviour
     public Sprite currentWork;
     public TextMeshProUGUI text;
 
-    Queue<AudioClip> audioClipQueue = new Queue<AudioClip>();
-    Queue<string> textsQueue = new Queue<string>();
-    [SerializeField] private AudioSource audioSource;
-
-    private bool isExplanationStage = false;
-    private int count = 0;
+    Queue<Question> questionsQueue = new Queue<Question>();
 
     private void Start()
     {
         image.sprite = vanGogh;
-        audioSource.Stop();
     }
 
     public void SetExplanationStage(Question[] awnsers, Sprite workImg)
     {   
-        currentWork = workImg;  
-        foreach (Question question in awnsers)
-        {
-            for (int ii = 0; ii < question.awnsers.Length; ii++)
-            {
-                audioClipQueue.Enqueue(question.awnsers[ii]);
-                textsQueue.Enqueue(question.description[ii]);
-            }
+        currentWork = workImg;
+        foreach (Question question in awnsers) {
+            questionsQueue.Enqueue(question);
         }
-        isExplanationStage = true;
+        NextQuestion();
     }
 
-    private void Update()
+    public void NextQuestion()
     {
-        if (isExplanationStage)
-        {
-            if (!audioSource.isPlaying && (audioClipQueue.Count == 0 && textsQueue.Count == 0))
-            {
-                FindAnyObjectByType<ChooseArtController>().StartPractise();
-                isExplanationStage=false;
-                count = 0;
-                image.sprite = vanGogh;
-            }
+        if (questionsQueue.Count == 0)
+            return;
 
-            if (!audioSource.isPlaying && (audioClipQueue.Count != 0 && textsQueue.Count != 0))
-            {
-                if(count == 3)
-                {
-                    image.sprite = currentWork;
-                }
-                audioSource.clip = audioClipQueue.Dequeue();
-                text.text = textsQueue.Dequeue();
-                audioSource.Play();
-                count++;
-            }
+        if (questionsQueue.Count == 1)
+        {
+            DialogueManager.Instance.StartDialogue(questionsQueue.Dequeue(), 1, currentWork);
+        }
+        else
+        {
+            if(questionsQueue.Count == 3)
+                DialogueManager.Instance.StartDialogue(questionsQueue.Dequeue(), 0, vanGogh);
+            else
+                DialogueManager.Instance.StartDialogue(questionsQueue.Dequeue(), 0, currentWork);
         }
     }
 }

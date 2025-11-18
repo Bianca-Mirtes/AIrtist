@@ -45,6 +45,7 @@ public class ChooseArtController : MonoBehaviour
     public void StartPractise()
     {
         questions.GetChild(0).gameObject.SetActive(true);
+        transform.GetChild(1).gameObject.SetActive(false);
         tutorial.SetActive(true);
     }
 

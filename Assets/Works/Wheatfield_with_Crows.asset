@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Work
   image: {fileID: 21300000, guid: dcf31d2d94e3a3c409798d67205c7f3d, type: 3}
   texture:
-  - {fileID: 18700000, guid: 534ef4b98e7a6af48b380f04e3548b77, type: 2}
-  - {fileID: 18700000, guid: a7e9b278431a01141982c5551812ba94, type: 2}
-  - {fileID: 18700000, guid: 1f67dbffd2cf565419616ee17ed606fb, type: 2}
-  - {fileID: 18700000, guid: 6b919de6c48ac23439495c38be2e0075, type: 2}
+  - {fileID: 18700000, guid: 506e8ec3cf4f61544b029757b0f6728b, type: 2}
+  - {fileID: 18700000, guid: e7ea1cb1e2d543740b89be018fa8f15a, type: 2}
+  - {fileID: 18700000, guid: a5f39a09f64caea4091396fdcb2bf655, type: 2}
+  - {fileID: 18700000, guid: 13571bd6ffb055642ac85ae4c5fe128a, type: 2}
   workName: Wheatfield with Crows
   author: Vicent Van Gogh
   age: 1890

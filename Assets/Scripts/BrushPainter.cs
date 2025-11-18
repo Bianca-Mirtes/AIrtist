@@ -33,7 +33,7 @@ public class BrushPainter : MonoBehaviour
         target = null;
     }
 
-    void Update()
+    /*void Update()
     {
         if (!grab.isSelected)
             return;
@@ -49,8 +49,36 @@ public class BrushPainter : MonoBehaviour
                 Debug.Log("Pintando...");
 
                 Vector2 uv = hit.textureCoord;
-                target.PaintAtUV(uv, brushRadius);
+                //target.PaintAtUV(uv, brushRadius);
                 FindFirstObjectByType<FrameBlender>().isPainting = true;
+            }
+            else
+            {
+                FindFirstObjectByType<FrameBlender>().isPainting = false;
+            }
+        }
+    }*/
+
+   void Update()
+    {
+        if (!grab.isSelected)
+            return;
+
+        if (Physics.SphereCast(
+            tip.position,
+            brushRadius * 0.5f,
+            -tip.up,
+            out RaycastHit hit,
+            0.1f,
+            paintableLayer))
+        {
+            var receiver = hit.collider.GetComponent<PaintingController>();
+
+            if (receiver != null)
+            {
+                Vector2 uv = hit.textureCoord;
+                receiver.PaintAtUV(uv);
+                Debug.Log("Escostando na tela");
             }
             else
             {
