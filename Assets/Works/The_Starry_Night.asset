@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Work
   image: {fileID: 21300000, guid: 77452d33cb0298245a356dd24ae97ca1, type: 3}
   texture:
-  - {fileID: 18700000, guid: 085856c68eb3e0547b183d5c654dc37f, type: 2}
-  - {fileID: 18700000, guid: e25b91991b7b63444aef7a9ed10b4c71, type: 2}
-  - {fileID: 18700000, guid: f13a16a0238ef9449904891a73e318d4, type: 2}
-  - {fileID: 18700000, guid: 72d464a7abf99b64eb57fe7640499c85, type: 2}
+  - {fileID: 18700000, guid: 1cce920b48565d7419bfee8242ccf46f, type: 2}
+  - {fileID: 18700000, guid: 9a2adaa7aa16bc442a955140ad62e401, type: 2}
+  - {fileID: 18700000, guid: d3e55298fa1135d468b191eff980cfd2, type: 2}
+  - {fileID: 18700000, guid: 608038a0cdeb35b4a923f972071562e3, type: 2}
   workName: The Starry Night
   author: Vicent Van Gogh
   age: 1889

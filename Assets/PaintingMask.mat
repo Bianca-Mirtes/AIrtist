@@ -25,19 +25,19 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _Arr0:
-        m_Texture: {fileID: 18700000, guid: 085856c68eb3e0547b183d5c654dc37f, type: 2}
+        m_Texture: {fileID: 18700000, guid: 1cce920b48565d7419bfee8242ccf46f, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Arr1:
-        m_Texture: {fileID: 18700000, guid: e25b91991b7b63444aef7a9ed10b4c71, type: 2}
+        m_Texture: {fileID: 18700000, guid: 9a2adaa7aa16bc442a955140ad62e401, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Arr2:
-        m_Texture: {fileID: 18700000, guid: f13a16a0238ef9449904891a73e318d4, type: 2}
+        m_Texture: {fileID: 18700000, guid: d3e55298fa1135d468b191eff980cfd2, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Arr3:
-        m_Texture: {fileID: 18700000, guid: 72d464a7abf99b64eb57fe7640499c85, type: 2}
+        m_Texture: {fileID: 18700000, guid: 608038a0cdeb35b4a923f972071562e3, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Arr4:
@@ -122,7 +122,7 @@ Material:
     - _AlphaClip: 0
     - _AlphaToMask: 0
     - _BatchSize: 100
-    - _Blend: 0.72780824
+    - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _ClearCoatMask: 0
