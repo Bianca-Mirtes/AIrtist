@@ -34,10 +34,17 @@ public class ChooseArtController : MonoBehaviour
             artMat.SetTexture("_Arr1", work.texture[1]);
             artMat.SetTexture("_Arr2", work.texture[2]);
             artMat.SetTexture("_Arr3", work.texture[3]);
+
+            BrushGuide.Instance.LoadStrokeData(work.vectors);
+            BrushGuide.Instance.SetResolution(512, 512);
+            BrushGuide.Instance.ShowGuideArrow(0, 1);
+
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
             FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
-            transform.GetChild(0).gameObject.SetActive(false);
-            transform.GetChild(1).gameObject.SetActive(true);
+
+            transform.GetChild(1).gameObject.SetActive(false);
+            transform.GetChild(3).gameObject.SetActive(true);
+
             clicked = true;
         }
     }
@@ -45,7 +52,7 @@ public class ChooseArtController : MonoBehaviour
     public void StartPractise()
     {
         questions.GetChild(0).gameObject.SetActive(true);
-        transform.GetChild(1).gameObject.SetActive(false);
+        transform.GetChild(3).gameObject.SetActive(false);
         tutorial.SetActive(true);
     }
 
