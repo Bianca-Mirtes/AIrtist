@@ -12,7 +12,7 @@ public class DialogueManager : MonoBehaviour
 
     private Queue<(string, AudioClip)> lines = new Queue<(string, AudioClip)>();
     public bool dialogueIsActive = false;
-    private float typingSpeed = 0.001f;
+    private float typingSpeed = 0.06f;
     public static DialogueManager _instance;
     public int currentTrigger;
     public Sprite currentIcon;
@@ -93,10 +93,13 @@ public class DialogueManager : MonoBehaviour
         foreach (char letter in currentLine.Item1.ToCharArray())
         {
             dialogueLine.text += letter;
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForSeconds(typingSpeed);
         }
 
-        yield return new WaitForSeconds(currentLine.Item2.length/3);
+        while(audioSource.isPlaying)
+        {
+            yield return new WaitForSeconds(1);
+        }
 
         DisplayNextLine();
     }

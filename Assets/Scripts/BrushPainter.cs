@@ -54,7 +54,7 @@ public class BrushPainter : MonoBehaviour
     }
 
 
-    /*void Update()
+    void Update()
     {
         if (Physics.Raycast(tip.position, tip.forward, out RaycastHit hit, 0.05f, paintSurfaceLayer))
         {
