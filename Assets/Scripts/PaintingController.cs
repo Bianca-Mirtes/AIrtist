@@ -18,7 +18,6 @@ public class PaintingController : MonoBehaviour
     // Blend atual
     private float blend = 0f;
     public GameObject arrowPrefab;
-    StrokeGuideData[] transitions; // lido do TXT
     GameObject currentArrow;
 
     public bool isPainting { get; set; } = false;
@@ -62,7 +61,7 @@ public class PaintingController : MonoBehaviour
         }
         currentFrame++;
         paintingMaterial.SetInt("_GlobalFrame", currentFrame);
-        BrushGuide.Instance.ShowGuideArrow(currentFrame, currentFrame + 1);
+        BrushGuide.Instance.ShowGuideArrow(currentFrame, currentFrame+1);
     }
     private void OnDestroy()
     {

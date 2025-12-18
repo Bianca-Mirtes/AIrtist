@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Work
   image: {fileID: 21300000, guid: 77452d33cb0298245a356dd24ae97ca1, type: 3}
   texture:
-  - {fileID: 18700000, guid: a71f13690f3889642b414c91c3574e7a, type: 2}
-  - {fileID: 18700000, guid: 351f1eeeb1f8c7940a315698973e99cb, type: 2}
-  - {fileID: 18700000, guid: 3a1c426b1e136e14194a9e31eb975572, type: 2}
-  - {fileID: 18700000, guid: 340b46b1fe8dcde47a514842b229d8de, type: 2}
+  - {fileID: 18700000, guid: 6619d82c15e608d47a812158055c2ec0, type: 2}
+  - {fileID: 18700000, guid: 44fcc52749e35ac488f0423a6c03d11b, type: 2}
+  - {fileID: 18700000, guid: f6feb7e9ade6ab342a04008d22836720, type: 2}
+  - {fileID: 18700000, guid: 14f33931a4303a6478c0bc7f3fb76cc2, type: 2}
   workName: The Starry Night
   author: Vicent Van Gogh
   age: 1889
@@ -25,6 +25,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5a006dede46c7644e8f04e17696601f4, type: 2}
   - {fileID: 11400000, guid: 6171bf72fb48adc47a1c6a20fee94bf5, type: 2}
   - {fileID: 11400000, guid: e88ac2f7ba94ad0479109b88f7e41871, type: 2}
-  resWidth: 512
+  resWidth: 750
   resHeight: 598
   vectors: {fileID: 4900000, guid: 51fa84814debaeb4da55fa6838d19323, type: 3}

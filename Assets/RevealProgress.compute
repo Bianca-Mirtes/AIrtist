@@ -1,0 +1,28 @@
+#pragma kernel CountProgress
+
+Texture2D<float> RevealMask;
+Texture2D<float> ValidityMask;
+
+RWStructuredBuffer<uint> Revealed;
+RWStructuredBuffer<uint> Total;
+
+[numthreads(8, 8, 1)]
+void CountProgress(uint3 id : SV_DispatchThreadID)
+{
+    uint w, h;
+    RevealMask.GetDimensions(w, h);
+
+    if (id.x >= w || id.y >= h)
+        return;
+
+    float valid = ValidityMask.Load(int3(id.xy, 0));
+    if (valid < 0.5)
+        return;
+
+    InterlockedAdd(Total[0], 1);
+
+    float reveal = RevealMask.Load(int3(id.xy, 0));
+    if (reveal > 0.5)
+        InterlockedAdd(Revealed[0], 1);
+}
+

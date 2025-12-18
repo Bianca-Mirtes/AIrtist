@@ -22,7 +22,8 @@ public class BrushPainter : MonoBehaviour
         // enconstou na seta
         if (arrow != null)
         {
-            if (DirectionMatches(arrow.requiredAngle))
+            PaintingController.Instance.AdvanceFrame();
+            /*if (DirectionMatches(arrow.requiredAngle))
             {
                 Debug.Log("✔ Pintou na direção certa — mudar frame!");
                 PaintingController.Instance.AdvanceFrame();
@@ -30,7 +31,7 @@ public class BrushPainter : MonoBehaviour
             else
             {
                 Debug.Log("❌ Direção errada — não avança");
-            }
+            }*/
         }
     }
 
@@ -54,7 +55,7 @@ public class BrushPainter : MonoBehaviour
     }
 
 
-    void Update()
+    /*void Update()
     {
         if (Physics.Raycast(tip.position, tip.forward, out RaycastHit hit, 0.05f, paintSurfaceLayer))
         {

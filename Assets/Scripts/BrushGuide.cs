@@ -1,161 +1,146 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
+using System.Threading;
 using UnityEngine;
 
 public class BrushGuide : MonoBehaviour
 {
-    private Dictionary<(int from, int to), StrokeGuideData> guideMap;
-    public static BrushGuide Instance { get; private set; }
+    public static BrushGuide Instance;
 
     [System.Serializable]
-    public struct StrokeGuideData
+    public class StrokeGuideData
     {
-        public float cx, cy;
-        public float dirX, dirY;
-        public float angle;
+        public int pairIndex;
+        public int imgFrom;
+        public int imgTo;
+        public float startX, startY;
+        public float endX, endY;
+        public float cx, cy;           // centroid_x / y
+        public float dirX, dirY;       // unit_dir_x / y
+        public float length;
+        public float angle;            // angle_rad
+        public int sizePixels;
     }
+
+    [Header("Painting Quad")]
+    public Renderer paintingRenderer; // mesh renderer do QUAD 3D
+
+    [Header("Resolution Quad")]
+    private int imgWidth;
+    private int imgHeight;
+
+    [Header("Arrow Prefab")]
+    public GameObject arrowPrefab;
+    public float arrowDistanceOffset = 0.01f; // 1cm na frente da tela
+
+    [Header("Guide Data")]
+    private Dictionary<(int, int), StrokeGuideData> guideDict;
+
+    private CultureInfo ci;
+
+    GameObject currentArrow;
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
         Instance = this;
-
-        guideMap = new Dictionary<(int, int), StrokeGuideData>();
+        ci = (CultureInfo)CultureInfo.InvariantCulture.Clone();
     }
 
-    public void LoadStrokeData(TextAsset file)
+    public void SetResolution(int w, int h)
     {
-        guideMap.Clear();
-        var lines = file.text.Split('\n');
+        imgWidth = w;
+        imgHeight = h;
+    }
 
-        foreach (var line in lines)
+
+    public void LoadGuideData(TextAsset guideFile)
+    {
+        guideDict = new Dictionary<(int, int), StrokeGuideData>();
+        string[] lines = guideFile.text.Split('\n');
+        foreach (string line in lines)
         {
             if (string.IsNullOrWhiteSpace(line)) continue;
             if (line.StartsWith("#")) continue;
 
-            var parts = line.Split(',');
-            // trim whitespaces
-            for (int i = 0; i < parts.Length; i++)
-                parts[i] = parts[i].Trim();
+            string[] parts = line.Split(',');
 
-            string imgFrom = parts[1]; // generated000.png
-            string imgTo = parts[2]; // generated001.png
-
-            int f = ExtractIndex(imgFrom);
-            int t = ExtractIndex(imgTo);
-
-            var ci = CultureInfo.InvariantCulture;
             StrokeGuideData data = new StrokeGuideData();
+            data.pairIndex = int.Parse(parts[0]);
+            data.imgFrom = int.Parse(parts[1].Replace("generated", "").Replace(".png", ""));
+            data.imgTo = int.Parse(parts[2].Replace("generated", "").Replace(".png", ""));
+
+            data.startX = float.Parse(parts[4], NumberStyles.Float, ci);
+            data.startY = float.Parse(parts[5], NumberStyles.Float, ci);
+            data.endX = float.Parse(parts[6], NumberStyles.Float, ci);
+            data.endY = float.Parse(parts[7], NumberStyles.Float, ci);
+
             data.cx = float.Parse(parts[8], NumberStyles.Float | NumberStyles.AllowLeadingSign, ci);
             data.cy = float.Parse(parts[9], NumberStyles.Float | NumberStyles.AllowLeadingSign, ci);
+
             data.dirX = float.Parse(parts[10], NumberStyles.Float | NumberStyles.AllowLeadingSign, ci);
             data.dirY = float.Parse(parts[11], NumberStyles.Float | NumberStyles.AllowLeadingSign, ci);
-            data.angle = float.Parse(parts[13], NumberStyles.Float | NumberStyles.AllowLeadingSign, ci);
-            Debug.Log(data.cx);
-            Debug.Log(data.cy);
-            Debug.Log(data.dirX);
-            Debug.Log(data.dirY);
-            Debug.Log(data.angle);
 
-            guideMap[(f, t)] = data;
+            data.length = float.Parse(parts[12], NumberStyles.Float, ci);
+            data.angle = float.Parse(parts[13], NumberStyles.Float | NumberStyles.AllowLeadingSign, ci);
+
+            data.sizePixels = int.Parse(parts[14]);
+
+            guideDict[(data.imgFrom, data.imgTo)] = data;
         }
+
+        Debug.Log($"Loaded {guideDict.Count} stroke entries.");
     }
 
-    public void ShowGuideArrow(int currentFrame, int nextFrame)
+    // -------------------------------------------------------------
+    // Este é o método chamado pelo AdvanceFrame()
+    // -------------------------------------------------------------
+    public void ShowGuideArrow(int from, int to)
     {
-        if (!guideMap.TryGetValue((currentFrame, nextFrame), out StrokeGuideData data))
+        if (!guideDict.TryGetValue((from, to), out StrokeGuideData data))
         {
-            Debug.LogWarning("⚠ Não há vetor guia para esta transição.");
+            Debug.LogWarning($"No guide data for {from} -> {to}");
             return;
         }
 
-        SpawnArrow(data, currentFrame, nextFrame);
+        SpawnArrow(data);
     }
 
-    public GameObject arrowPrefab;
-    private GameObject currentArrow;
-    public Transform screenRenderer;
-    public int imgWidth;
-    public int imgHeight;
-
-    public void SetResolution(int width, int height)
+    void SpawnArrow(StrokeGuideData data)
     {
-        imgWidth = width;
-        imgHeight = height;
-    }
+        if (currentArrow) Destroy(currentArrow);
 
-    private void SpawnArrow(StrokeGuideData d, int currentFrame, int nextFrame)
-    {
-        // apagar seta anterior
-        if (currentArrow != null)
-            Destroy(currentArrow);
+        // resolução da sua pintura
+        float texW = imgWidth;
+        float texH = imgHeight;
 
-        Vector2 uv = new Vector2(
-            d.cx / imgWidth,
-            1f - (d.cy / imgHeight)
-        );
+        // pixel → UV
+        float u = data.cx / texW;
+        float v = 1f - (data.cy / texH); // flip vertical
 
-        Debug.Log("Centroid x: "+ d.cx);
-        Debug.Log("Centroid y: " + d.cy);
+        // UV → local do quad
+        Vector3 local = new Vector3(u - 0.5f, v - 0.5f, 0f);
 
-        Debug.Log("uv x: " + uv.x);
-        Debug.Log("uv y: " + uv.y);
+        Transform quad = paintingRenderer.transform;
 
-        Vector3 worldPos = PixelToWorld(uv.x, uv.y, screenRenderer);
+        // local → world
+        Vector3 world = quad.TransformPoint(local);
 
-        float angleDeg = d.angle * Mathf.Rad2Deg;
+        // empurrar para frente da tela
+        Vector3 normal = quad.TransformDirection(Vector3.forward);
+        world += normal * arrowDistanceOffset;
 
-        Quaternion rot = Quaternion.Euler(
-            -angleDeg,
-            0f,
-            0f
-        );
+        // direção da seta (em espaço local da imagem)
+        Vector3 localDir = new Vector3(data.dirX, -data.dirY, 0f);
+        // OBS: inverti Y para alinhar com o flip vertical de antes
 
-        GameObject arrow = Instantiate(arrowPrefab, worldPos, rot);
+        // localDir → worldDir
+        Vector3 worldDir = quad.TransformDirection(localDir).normalized;
 
-        ArrowTarget info = arrow.GetComponent<ArrowTarget>();
-        info.fromFrame = currentFrame;
-        info.toFrame = nextFrame;
-        info.requiredAngle = d.angle;
+        // criar rotação
+        Quaternion rot = Quaternion.LookRotation(worldDir, normal);
 
-        currentArrow = arrow; // store for later cleanup
-    }
-    public Vector3 PixelToWorld(float pixelX, float pixelY, Transform quad)
-    {
-        // Pixel → UV 0..1
-        float u = pixelX / imgWidth;
-        float v = pixelY / imgHeight;
-
-        // Inverter Y porque Unity usa bottom→top
-        v = 1f - v;
-
-        // UV → offset [-0.5..+0.5]
-        float offX = (u - 0.1f) * quad.localScale.x;
-        float offY = (v - 0.5f) * quad.localScale.y;
-
-        // Constrói posição no mundo usando os vetores do quad
-        Vector3 world =
-            quad.position + new Vector3(0.09f, 0f, 0f) +
-            quad.right * offX +
-            quad.up * offY;
-        Debug.Log("offX = " + offX);
-        Debug.Log("offY = " + offY);
-        Debug.Log("quadR = " + quad.right);
-        Debug.Log("quadU = " + quad.up);
-
-        return world;
-    }
-
-    int ExtractIndex(string img)
-    {
-        // generated000.png → 0
-        string num = img.Replace("generated", "").Replace(".png", "");
-        return int.Parse(num);
+        // instanciar seta
+        currentArrow = Instantiate(arrowPrefab, world, rot);
     }
 }
 

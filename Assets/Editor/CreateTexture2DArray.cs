@@ -68,7 +68,7 @@ public class CreateTexture2DArray : EditorWindow
         textureArray.filterMode = FilterMode.Bilinear;
 
         // Preenche camada por camada
-        for (int i = 0; i < (count-100); i++)
+        for (int i = 0; i < count; i++)
         {
             string path = files[i];
             byte[] bytes = File.ReadAllBytes(path);

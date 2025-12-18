@@ -35,15 +35,15 @@ public class ChooseArtController : MonoBehaviour
             artMat.SetTexture("_Arr2", work.texture[2]);
             artMat.SetTexture("_Arr3", work.texture[3]);
 
-            BrushGuide.Instance.LoadStrokeData(work.vectors);
-            BrushGuide.Instance.SetResolution(512, 512);
+            BrushGuide.Instance.LoadGuideData(work.vectors);
+            BrushGuide.Instance.SetResolution(work.resWidth, work.resHeight);
             BrushGuide.Instance.ShowGuideArrow(0, 1);
 
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
-            FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
+            //FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
 
             transform.GetChild(1).gameObject.SetActive(false);
-            transform.GetChild(3).gameObject.SetActive(true);
+            //transform.GetChild(3).gameObject.SetActive(true);
 
             clicked = true;
         }

@@ -7,7 +7,7 @@ public class MultiTexture2DArrayGenerator : EditorWindow
 {
     string folderPath = "Assets/Starry_Night/1";
     string outputFolder = "Assets/PaintingArrays";
-    int batchSize = 100; // 100 frames por array
+    int batchSize = 200; // 100 frames por array
 
     [MenuItem("Tools/Create Multiple Texture2DArray")]
     public static void OpenWindow()
@@ -17,7 +17,7 @@ public class MultiTexture2DArrayGenerator : EditorWindow
 
     private void OnGUI()
     {
-        GUILayout.Label("Generate 5 Texture2DArray (auto split)", EditorStyles.boldLabel);
+        GUILayout.Label("Generate Texture2DArray (auto split)", EditorStyles.boldLabel);
 
         folderPath = EditorGUILayout.TextField("Frames Folder", folderPath);
         outputFolder = EditorGUILayout.TextField("Output Folder", outputFolder);
