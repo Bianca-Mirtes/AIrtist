@@ -16,8 +16,6 @@ MonoBehaviour:
   texture:
   - {fileID: 18700000, guid: 6619d82c15e608d47a812158055c2ec0, type: 2}
   - {fileID: 18700000, guid: 44fcc52749e35ac488f0423a6c03d11b, type: 2}
-  - {fileID: 18700000, guid: f6feb7e9ade6ab342a04008d22836720, type: 2}
-  - {fileID: 18700000, guid: 14f33931a4303a6478c0bc7f3fb76cc2, type: 2}
   workName: The Starry Night
   author: Vicent Van Gogh
   age: 1889

@@ -12,7 +12,7 @@ public class DialogueManager : MonoBehaviour
 
     private Queue<(string, AudioClip)> lines = new Queue<(string, AudioClip)>();
     public bool dialogueIsActive = false;
-    private float typingSpeed = 0.06f;
+    private float typingSpeed = 0.04f;
     public static DialogueManager _instance;
     public int currentTrigger;
     public Sprite currentIcon;

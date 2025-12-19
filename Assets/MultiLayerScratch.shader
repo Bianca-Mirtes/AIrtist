@@ -9,6 +9,8 @@
         _UseLayerB ("Use Layer B", Int) = 0
 
         _ScratchMask ("Scratch Mask", 2D) = "black" {}
+        _OverlayColor ("Overlay Color", Color) = (1,1,1,0.35)
+        _OverlayStrength ("Overlay Strength", Range(0,1)) = 1
     }
 
     SubShader
@@ -32,6 +34,10 @@
 
             int _FrameIndex;
             int _UseLayerB;
+
+            fixed4 _OverlayColor;
+            float _OverlayStrength;
+
 
             struct appdata
             {
@@ -81,8 +87,30 @@
 
                 float mask = tex2D(_ScratchMask, i.uv).r;
 
-                // máscara revela SOMENTE o próximo frame
-                return lerp(colCurr, colNext, mask);
+                // 🔹 Revelação normal
+                fixed4 revealed = lerp(colCurr, colNext, mask);
+
+                 // 🔹 DIFERENÇA REAL ENTRE FRAMES
+                float diff =
+                    abs(colNext.r - colCurr.r) +
+                    abs(colNext.g - colCurr.g) +
+                    abs(colNext.b - colCurr.b);
+
+                diff /= 3.0; // normaliza
+
+                // threshold pra evitar ruído mínimo
+                float diffMask = step(0.05, diff);
+
+                // overlay só onde:
+                // - há diferença real
+                // - ainda não foi revelado pela máscara
+                float overlayFactor = diffMask * (1.0 - mask) * _OverlayStrength;
+
+                fixed4 overlay = _OverlayColor;
+                overlay.a *= overlayFactor;
+
+                return lerp(revealed, overlay, overlay.a);
+                //return fixed4(diffMask, diffMask, diffMask, 1);
             }
             ENDCG
         }

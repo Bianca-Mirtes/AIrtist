@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class ScratchLayerManager : MonoBehaviour
 {
@@ -11,9 +10,15 @@ public class ScratchLayerManager : MonoBehaviour
 
     [Header("Frames")]
     public int framesPerArray = 200;
+    public int totalFrames = 400;
+    public Texture2DArray layerA, layerB;
 
     [Header("Scratch Mask")]
     public RenderTexture activeMask;
+
+    [Header("Final")]
+    public ParticleSystem confetti;
+    public GameObject UI;
 
     MaterialPropertyBlock mpb;
     int globalFrame;
@@ -45,13 +50,20 @@ public class ScratchLayerManager : MonoBehaviour
 
         mpb.SetInt("_FrameIndex", localFrame);
         mpb.SetInt("_UseLayerB", useLayerB);
-
-        Debug.Log($"Frame atual: {globalFrame}");
-
         target.SetPropertyBlock(mpb);
 
+        // 🔹 limpa máscara UMA vez apenas
         ClearMask();
+
+        if (useLayerB == 1 && globalFrame >= 399)
+        {
+            confetti.Play();
+            UI.SetActive(true);
+        }
+
+        Debug.Log($"Frame atual: {globalFrame}");
     }
+
 
     void ClearMask()
     {

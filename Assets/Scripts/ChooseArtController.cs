@@ -30,23 +30,23 @@ public class ChooseArtController : MonoBehaviour
     {
         if (!clicked)
         {
-            artMat.SetTexture("_Arr0", work.texture[0]);
-            artMat.SetTexture("_Arr1", work.texture[1]);
-            artMat.SetTexture("_Arr2", work.texture[2]);
-            artMat.SetTexture("_Arr3", work.texture[3]);
-
-            BrushGuide.Instance.LoadGuideData(work.vectors);
-            BrushGuide.Instance.SetResolution(work.resWidth, work.resHeight);
-            BrushGuide.Instance.ShowGuideArrow(0, 1);
+            artMat.SetTexture("_LayerA", work.texture[0]);
+            artMat.SetTexture("_LayerB", work.texture[1]);
 
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
-            //FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
+            FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
 
             transform.GetChild(1).gameObject.SetActive(false);
-            //transform.GetChild(3).gameObject.SetActive(true);
+            transform.GetChild(3).gameObject.SetActive(true);
 
             clicked = true;
+            Invoke("ResetClick", 2f);
         }
+    }
+
+    private void ResetClick()
+    {
+        clicked = false;
     }
 
     public void StartPractise()
@@ -58,6 +58,7 @@ public class ChooseArtController : MonoBehaviour
 
     private void OnDestroy()
     {
-        artMat.SetTexture("_Frames", null);
+        artMat.SetInt("_FrameIndex", 0);
+        artMat.SetInt("_UseLayerB", 0);
     }
 }

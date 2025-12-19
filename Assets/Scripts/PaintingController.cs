@@ -34,22 +34,6 @@ public class PaintingController : MonoBehaviour
     }
 
 
-    /*void Update()
-    {
-        if (!isPainting)
-            return;
-
-        // aumenta o blend progressivamente
-        blend += Time.deltaTime * blendSpeed;
-        paintingMaterial.SetFloat("_Blend", blend);
-
-        // Se completou uma transição, vai para o próximo frame
-        if (blend >= 1f)
-        {
-            AdvanceFrame();
-        }
-    }*/
-
     // ======================================================
     // Passar para o próximo frame
     // ======================================================

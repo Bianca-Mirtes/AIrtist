@@ -25,10 +25,14 @@ public class VRBrushPainter : MonoBehaviour
     BrushStampAnalyzer analyzer;
     float lastStrokeTime;
 
+    public FrameDiffData frameDiffData;
+    float[] frameDiffs;
+
     void Start()
     {
         paintMat = new Material(Shader.Find("Hidden/BrushPainter"));
         analyzer = new BrushStampAnalyzer();
+        frameDiffs = frameDiffData.diffs;
     }
 
     void Update()
@@ -45,6 +49,16 @@ public class VRBrushPainter : MonoBehaviour
                 TryPaint(hit.textureCoord);
             }
         }
+        /*if (Input.GetKeyDown(KeyCode.P))
+        {
+            Ray ray = new Ray(brushTip.position, brushTip.forward);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
+            {
+                TryPaint(hit.textureCoord);
+            }
+        }*/
+
     }
     void TryPaint(Vector2 uv)
     {
@@ -56,13 +70,16 @@ public class VRBrushPainter : MonoBehaviour
 
         int brushPx = Mathf.RoundToInt(brushSize * activeMask.width);
 
-        if (analyzer.IsStampRevealed(
-            activeMask,
-            uv,
-            brushPx
-        ))
+        if(frameDiffs[scratchManager.GlobalFrame] < 0.02f)
         {
             scratchManager.AdvanceFrame();
+        }
+        else
+        {
+            if (analyzer.IsStampRevealed( activeMask,  uv, brushPx))
+            {
+                scratchManager.AdvanceFrame();
+            }
         }
     }
 
