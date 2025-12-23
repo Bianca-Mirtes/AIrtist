@@ -4,6 +4,8 @@
     {
         _LayerA ("Layer A Frames", 2DArray) = "" {}
         _LayerB ("Layer B Frames", 2DArray) = "" {}
+        _LayerA_DiffMasks("Masks Layer A", 2DArray) = "" {}
+        _LayerB_DiffMasks("Masks Layer B", 2DArray) = "" {}
 
         _FrameIndex ("Frame Index", Int) = 0
         _UseLayerB ("Use Layer B", Int) = 0
@@ -29,6 +31,8 @@
 
             UNITY_DECLARE_TEX2DARRAY(_LayerA);
             UNITY_DECLARE_TEX2DARRAY(_LayerB);
+            UNITY_DECLARE_TEX2DARRAY(_LayerA_DiffMasks);
+            UNITY_DECLARE_TEX2DARRAY(_LayerB_DiffMasks);
 
             sampler2D _ScratchMask;
 
@@ -77,6 +81,24 @@
                 }
             }
 
+            float SampleDiffMask(float2 uv, int frame)
+            {
+                if (_UseLayerB == 0)
+                {
+                    return UNITY_SAMPLE_TEX2DARRAY(
+                        _LayerA_DiffMasks,
+                        float3(uv, frame)
+                    ).r;
+                }
+                else
+                {
+                    return UNITY_SAMPLE_TEX2DARRAY(
+                        _LayerB_DiffMasks,
+                        float3(uv, frame)
+                    ).r;
+                }
+            }
+
             fixed4 frag (v2f i) : SV_Target
             {
                 int curr = _FrameIndex;
@@ -85,10 +107,16 @@
                 fixed4 colCurr = SampleFrame(i.uv, curr);
                 fixed4 colNext = SampleFrame(i.uv, next);
 
-                float mask = tex2D(_ScratchMask, i.uv).r;
+                float scratch = tex2D(_ScratchMask, i.uv).r;
+                float d_Mask = SampleDiffMask(i.uv, curr);
+
+                // 🔑 Revela SOMENTE onde:
+                // - o usuário pintou
+                // - o frame realmente muda
+                float reveal = scratch * d_Mask;
 
                 // 🔹 Revelação normal
-                fixed4 revealed = lerp(colCurr, colNext, mask);
+                fixed4 revealed = lerp(colCurr, colNext, reveal);
 
                  // 🔹 DIFERENÇA REAL ENTRE FRAMES
                 float diff =
@@ -104,7 +132,7 @@
                 // overlay só onde:
                 // - há diferença real
                 // - ainda não foi revelado pela máscara
-                float overlayFactor = diffMask * (1.0 - mask) * _OverlayStrength;
+                float overlayFactor = diffMask * (1.0 - reveal) * _OverlayStrength;
 
                 fixed4 overlay = _OverlayColor;
                 overlay.a *= overlayFactor;

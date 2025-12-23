@@ -1430,7 +1430,6 @@ GameObject:
   - component: {fileID: 529394752}
   - component: {fileID: 529394751}
   - component: {fileID: 529394750}
-  - component: {fileID: 529394754}
   - component: {fileID: 529394755}
   m_Layer: 3
   m_Name: Painting
@@ -1533,22 +1532,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 7.07, y: -90, z: 0}
---- !u!114 &529394754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 529394749}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aaa64ddc953fd7e42b34fdfa5d85f120, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PaintingController
-  paintingMaterial: {fileID: 2100000, guid: 8b3e156f32fbc3e40996c69c68a80e3e, type: 2}
-  blendSpeed: 0.75
-  totalFrames: 400
-  arrowPrefab: {fileID: 0}
 --- !u!82 &529394755
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2983,7 +2966,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6598815579406187037, guid: 18ddb545287c546e19cc77dc9fbb2189, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6451,10 +6434,10 @@ MonoBehaviour:
   brushSize: 0.1
   brushTexture: {fileID: 2800000, guid: 79dfa83adcf72d541946168c849ba331, type: 3}
   paintColor: {r: 1, g: 1, b: 1, a: 1}
-  activeMask: {fileID: 8400000, guid: 20451a35a2c26b645be66c35dd7f93ff, type: 2}
   strokeInterval: 0.03
   scratchManager: {fileID: 1841777404}
   frameDiffData: {fileID: 11400000, guid: 2a741c652a1206140975a55c2b114eb5, type: 2}
+  currentDiffMask: {fileID: 0}
 --- !u!4 &1809812331
 Transform:
   m_ObjectHideFlags: 0
@@ -6502,9 +6485,12 @@ MonoBehaviour:
   target: {fileID: 529394751}
   framesPerArray: 200
   totalFrames: 400
-  layerA: {fileID: 18700000, guid: 6619d82c15e608d47a812158055c2ec0, type: 2}
-  layerB: {fileID: 18700000, guid: 44fcc52749e35ac488f0423a6c03d11b, type: 2}
+  layerA: {fileID: 18700000, guid: f3db84bbe9e318d4b986d8ec436eebd1, type: 2}
+  layerB: {fileID: 18700000, guid: d950574a78040924e98a6fc3842dae0b, type: 2}
   activeMask: {fileID: 8400000, guid: 20451a35a2c26b645be66c35dd7f93ff, type: 2}
+  layerA_DiffMasks: {fileID: 18700000, guid: dfc95fb56fe22c348b74c2a8c21c5676, type: 2}
+  layerB_DiffMasks: {fileID: 18700000, guid: 0d23f4604c06d984f9239fcec45ec2dc, type: 2}
+  brush: {fileID: 1809812330}
   confetti: {fileID: 2056288431}
   UI: {fileID: 2063575390}
 --- !u!4 &1841777405

@@ -33,11 +33,12 @@ public class ChooseArtController : MonoBehaviour
             artMat.SetTexture("_LayerA", work.texture[0]);
             artMat.SetTexture("_LayerB", work.texture[1]);
 
+ 
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
-            FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
+            //FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
 
             transform.GetChild(1).gameObject.SetActive(false);
-            transform.GetChild(3).gameObject.SetActive(true);
+            //transform.GetChild(3).gameObject.SetActive(true);
 
             clicked = true;
             Invoke("ResetClick", 2f);

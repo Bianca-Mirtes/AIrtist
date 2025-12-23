@@ -11,9 +11,6 @@ public class VRBrushPainter : MonoBehaviour
     public Texture2D brushTexture;
     public Color paintColor = Color.white;
 
-    [Header("Paint Target")]
-    public RenderTexture activeMask;
-
     [Header("Stroke Control")]
     public float strokeInterval = 0.03f;
 
@@ -26,6 +23,7 @@ public class VRBrushPainter : MonoBehaviour
     float lastStrokeTime;
 
     public FrameDiffData frameDiffData;
+    public Texture2D currentDiffMask;
     float[] frameDiffs;
 
     void Start()
@@ -37,7 +35,7 @@ public class VRBrushPainter : MonoBehaviour
 
     void Update()
     {
-        InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
+        /*InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
         InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
         devices[0].TryGetFeatureValue(CommonUsages.trigger, out float triggerValue);
         if (triggerValue > 0.2f)
@@ -48,8 +46,8 @@ public class VRBrushPainter : MonoBehaviour
             {
                 TryPaint(hit.textureCoord);
             }
-        }
-        /*if (Input.GetKeyDown(KeyCode.P))
+        }*/
+        if (Input.GetKeyDown(KeyCode.P))
         {
             Ray ray = new Ray(brushTip.position, brushTip.forward);
 
@@ -57,7 +55,7 @@ public class VRBrushPainter : MonoBehaviour
             {
                 TryPaint(hit.textureCoord);
             }
-        }*/
+        }
 
     }
     void TryPaint(Vector2 uv)
@@ -68,7 +66,7 @@ public class VRBrushPainter : MonoBehaviour
         lastStrokeTime = Time.time;
         PaintAtUV(uv);
 
-        int brushPx = Mathf.RoundToInt(brushSize * activeMask.width);
+        int brushPx = Mathf.RoundToInt(brushSize * scratchManager.activeMask.width);
 
         if(frameDiffs[scratchManager.GlobalFrame] < 0.02f)
         {
@@ -76,7 +74,7 @@ public class VRBrushPainter : MonoBehaviour
         }
         else
         {
-            if (analyzer.IsStampRevealed( activeMask,  uv, brushPx))
+            if (analyzer.IsStampValid(scratchManager.activeMask, currentDiffMask,  uv, brushPx))
             {
                 scratchManager.AdvanceFrame();
             }
@@ -91,14 +89,14 @@ public class VRBrushPainter : MonoBehaviour
         paintMat.SetTexture("_Brush", brushTexture);
 
         RenderTexture temp = RenderTexture.GetTemporary(
-            activeMask.width,
-            activeMask.height,
+            scratchManager.activeMask.width,
+            scratchManager.activeMask.height,
             0,
-            activeMask.format
+            scratchManager.activeMask.format
         );
 
-        Graphics.Blit(activeMask, temp);
-        Graphics.Blit(temp, activeMask, paintMat);
+        Graphics.Blit(scratchManager.activeMask, temp);
+        Graphics.Blit(temp, scratchManager.activeMask, paintMat);
 
         RenderTexture.ReleaseTemporary(temp);
     }

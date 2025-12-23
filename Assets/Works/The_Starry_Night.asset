@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Work
   image: {fileID: 21300000, guid: 77452d33cb0298245a356dd24ae97ca1, type: 3}
   texture:
-  - {fileID: 18700000, guid: 6619d82c15e608d47a812158055c2ec0, type: 2}
-  - {fileID: 18700000, guid: 44fcc52749e35ac488f0423a6c03d11b, type: 2}
+  - {fileID: 18700000, guid: f3db84bbe9e318d4b986d8ec436eebd1, type: 2}
+  - {fileID: 18700000, guid: d950574a78040924e98a6fc3842dae0b, type: 2}
   workName: The Starry Night
   author: Vicent Van Gogh
   age: 1889

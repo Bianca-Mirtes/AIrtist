@@ -15,6 +15,10 @@ public class ScratchLayerManager : MonoBehaviour
 
     [Header("Scratch Mask")]
     public RenderTexture activeMask;
+    public Texture2DArray layerA_DiffMasks;
+    public Texture2DArray layerB_DiffMasks;
+
+    public VRBrushPainter brush;
 
     [Header("Final")]
     public ParticleSystem confetti;
@@ -30,6 +34,12 @@ public class ScratchLayerManager : MonoBehaviour
         mpb = new MaterialPropertyBlock();
     }
 
+    private void Start()
+    {
+        ExtractDiffMaskSlice(layerA_DiffMasks, globalFrame);
+    }
+
+
     public void AdvanceFrame()
     {
         globalFrame++;
@@ -41,11 +51,13 @@ public class ScratchLayerManager : MonoBehaviour
         {
             localFrame = globalFrame;
             useLayerB = 0;
+            ExtractDiffMaskSlice(layerA_DiffMasks, localFrame);
         }
         else
         {
             localFrame = globalFrame - framesPerArray;
             useLayerB = 1;
+            ExtractDiffMaskSlice(layerB_DiffMasks, localFrame);
         }
 
         mpb.SetInt("_FrameIndex", localFrame);
@@ -62,6 +74,22 @@ public class ScratchLayerManager : MonoBehaviour
         }
 
         Debug.Log($"Frame atual: {globalFrame}");
+    }
+
+    void ExtractDiffMaskSlice(Texture2DArray src, int slice)
+    {
+        Texture2D tex = new Texture2D(
+            src.width,
+            src.height,
+            TextureFormat.R8,
+            false,
+            true
+        );
+
+        Graphics.CopyTexture(src, slice, 0, tex, 0, 0);
+        tex.Apply(false, false);
+
+        brush.currentDiffMask = tex;
     }
 
 

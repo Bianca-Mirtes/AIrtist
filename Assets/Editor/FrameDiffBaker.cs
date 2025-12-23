@@ -38,33 +38,46 @@ public static class FrameDiffBaker
         data.framesPerArray = framesPerArray;
         data.diffs = new float[framesPerArray * 2 - 1];
 
+        Texture2DArray diffMasksA = new Texture2DArray(layerA.width, layerA.height, framesPerArray, TextureFormat.R8, false, true);
+        Texture2DArray diffMasksB = new Texture2DArray(layerB.width, layerB.height, framesPerArray, TextureFormat.R8, false, true);
+
         int index = 0;
 
         // 🔹 Layer A
         for (int i = 0; i < framesPerArray - 1; i++)
         {
-            data.diffs[index++] =
-                ComputeDiff(
-                    Extract(layerA, i),
-                    Extract(layerA, i + 1)
-                );
+            Texture2D tex1 = Extract(layerA, i);
+            Texture2D tex2 = Extract(layerA, i + 1);
+
+            Texture2D mask = BuildDiffMask(tex1, tex2);
+
+            Graphics.CopyTexture(mask, 0, 0, diffMasksA, i, 0);
+
+            data.diffs[index++] = ComputeDiff(tex1, tex2);
+
         }
 
         // 🔹 Transição A → B
-        data.diffs[index++] =
-            ComputeDiff(
-                Extract(layerA, framesPerArray - 1),
-                Extract(layerB, 0)
-            );
+        Texture2D texture1 = Extract(layerA, framesPerArray - 1);
+        Texture2D texture2 = Extract(layerB, 0);
+
+        Texture2D diffMask = BuildDiffMask(texture1, texture2);
+
+        Graphics.CopyTexture(diffMask, 0, 0, diffMasksA, framesPerArray - 1, 0);
+
+        data.diffs[index++] = ComputeDiff(texture1, texture2);
 
         // 🔹 Layer B
         for (int i = 0; i < framesPerArray - 1; i++)
         {
-            data.diffs[index++] =
-                ComputeDiff(
-                    Extract(layerB, i),
-                    Extract(layerB, i + 1)
-                );
+            Texture2D tex1 = Extract(layerB, i);
+            Texture2D tex2 = Extract(layerB, i + 1);
+
+            Texture2D mask = BuildDiffMask(tex1, tex2);
+
+            Graphics.CopyTexture(mask, 0, 0, diffMasksB, i, 0);
+
+            data.diffs[index++] = ComputeDiff(tex1, tex2);
         }
 
         // 4️⃣ Salvar asset
@@ -73,11 +86,22 @@ public static class FrameDiffBaker
             "Assets/FrameDiffData.asset"
         );
 
+        AssetDatabase.CreateAsset(
+            diffMasksA,
+            "Assets/diffMasksA.asset"
+        );
+
+
+        AssetDatabase.CreateAsset(
+            diffMasksB,
+            "Assets/diffMasksB.asset"
+        );
+
         AssetDatabase.SaveAssets();
 
         EditorUtility.DisplayDialog(
             "Pronto",
-            "FrameDiffData.asset foi gerado com sucesso",
+            "FrameDiffData.asset, Assets/diffMasksA e diffMasksB.asset foram gerados com sucesso",
             "OK"
         );
     }
@@ -118,5 +142,38 @@ public static class FrameDiffBaker
         Object.DestroyImmediate(b);
 
         return diff / (float)pa.Length;
+    }
+
+    public static Texture2D BuildDiffMask( Texture2D a, Texture2D b, float pixelThreshold = 0.05f)
+    {
+        int w = a.width;
+        int h = a.height;
+
+        Texture2D mask = new Texture2D(
+            w, h,
+            TextureFormat.R8,
+            false,
+            true // linear
+        );
+
+        var pa = a.GetPixels32();
+        var pb = b.GetPixels32();
+        var outPixels = new Color32[pa.Length];
+
+        for (int i = 0; i < pa.Length; i++)
+        {
+            float d =
+                (Mathf.Abs(pa[i].r - pb[i].r) +
+                 Mathf.Abs(pa[i].g - pb[i].g) +
+                 Mathf.Abs(pa[i].b - pb[i].b))
+                / (3f * 255f);
+
+            byte v = d > pixelThreshold ? (byte)255 : (byte)0;
+            outPixels[i] = new Color32(v, v, v, 255);
+        }
+
+        mask.SetPixels32(outPixels);
+        mask.Apply(false, false);
+        return mask;
     }
 }
