@@ -25,20 +25,15 @@ public class ScratchLayerManager : MonoBehaviour
     public GameObject UI;
 
     MaterialPropertyBlock mpb;
-    int globalFrame;
+    int globalFrame=0;
 
     public int GlobalFrame => globalFrame;
 
     void Awake()
     {
         mpb = new MaterialPropertyBlock();
-    }
-
-    private void Start()
-    {
         ExtractDiffMaskSlice(layerA_DiffMasks, globalFrame);
     }
-
 
     public void AdvanceFrame()
     {

@@ -27,6 +27,7 @@ public class MainMenuController : MonoBehaviour
     private void AskForArt()
     {
         askCanvas.SetActive(true);
+        RecordingController.Instance.canRecording = true;
         transform.GetChild(0).gameObject.SetActive(false);
     }
 

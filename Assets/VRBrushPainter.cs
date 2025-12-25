@@ -56,6 +56,25 @@ public class VRBrushPainter : MonoBehaviour
                 TryPaint(hit.textureCoord);
             }
         }
+        if (Input.GetKeyUp(KeyCode.P)) {
+
+            if (frameDiffs[scratchManager.GlobalFrame] < 0.01f)
+            {
+                scratchManager.AdvanceFrame();
+            }
+            else
+            {
+                float progress = analyzer.CalculateProgress(
+                    scratchManager.activeMask,
+                    currentDiffMask
+                );
+
+                if (progress >= 0.98f)
+                {
+                    scratchManager.AdvanceFrame();
+                }
+            }
+        }
 
     }
     void TryPaint(Vector2 uv)
@@ -65,20 +84,6 @@ public class VRBrushPainter : MonoBehaviour
 
         lastStrokeTime = Time.time;
         PaintAtUV(uv);
-
-        int brushPx = Mathf.RoundToInt(brushSize * scratchManager.activeMask.width);
-
-        if(frameDiffs[scratchManager.GlobalFrame] < 0.02f)
-        {
-            scratchManager.AdvanceFrame();
-        }
-        else
-        {
-            if (analyzer.IsStampValid(scratchManager.activeMask, currentDiffMask,  uv, brushPx))
-            {
-                scratchManager.AdvanceFrame();
-            }
-        }
     }
 
     void PaintAtUV(Vector2 uv)

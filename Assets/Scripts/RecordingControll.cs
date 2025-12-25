@@ -29,11 +29,12 @@ public class RecordingController : MonoBehaviour
     [SerializeField] private Button newAudioBtn = null;
     [SerializeField] private Button returnBtn = null;
     private string baseUrl;
-
     private static RecordingController _instance;
     private bool wasSend = false;
     private bool wasVisualize = false;
     private bool isWaiting = false;
+
+    public bool canRecording = false;
 
     // Singleton
     public static RecordingController Instance
@@ -76,29 +77,34 @@ public class RecordingController : MonoBehaviour
     private void Update()
     {
 #if UNITY_EDITOR
-        if (Input.GetKeyDown(KeyCode.L) && !isRecording)
+        if (canRecording)
         {
-            StartRecording();
-        }
-        if (Input.GetKeyUp(KeyCode.L) && isRecording)
-        {
-            Stop();
+            if (Input.GetKeyDown(KeyCode.L) && !isRecording)
+            {
+                StartRecording();
+            }
+            if (Input.GetKeyUp(KeyCode.L) && isRecording)
+            {
+                Stop();
+            }
         }
 #else
-        InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
-        InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
-        devices[0].TryGetFeatureValue(CommonUsages.secondaryButton, out bool isPressed);
+        if(canRecording){
+            InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
+            InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
+            devices[0].TryGetFeatureValue(CommonUsages.secondaryButton, out bool isPressed);
 
-        if(isPressed && !lastPressed && !isRecording)
-        {
-            StartRecording();
-        }
-        if(!isPressed && lastPressed && isRecording)
-        {
-            Stop();
-        }
+            if(isPressed && !lastPressed && !isRecording)
+            {
+                StartRecording();
+            }
+            if(!isPressed && lastPressed && isRecording)
+            {
+                Stop();
+            }
 
-        lastPressed = isPressed;
+            lastPressed = isPressed;
+        }
 #endif
     }
     void StartRecording()

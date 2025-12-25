@@ -15,11 +15,6 @@ public class PaintingController : MonoBehaviour
     public int currentFrame { get; set; } = 0;
     public int totalFrames = 400;
 
-    // Blend atual
-    private float blend = 0f;
-    public GameObject arrowPrefab;
-    GameObject currentArrow;
-
     public bool isPainting { get; set; } = false;
     public static PaintingController Instance { get; private set; }
 

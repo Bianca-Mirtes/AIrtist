@@ -4,61 +4,57 @@ public class BrushStampAnalyzer
 {
     Texture2D readback;
 
-    public bool IsStampValid(
-      RenderTexture scratchMask,
-      Texture2D diffMask,
-      Vector2 uv,
-      int brushSizePx,
-      float threshold = 0.98f
-  )
+    public float CalculateProgress(
+        RenderTexture scratchRT,
+        Texture2D diffMask
+    )
     {
-        EnsureReadback(brushSizePx);
+        EnsureReadback(scratchRT.width, scratchRT.height);
 
-        int x = Mathf.RoundToInt(uv.x * scratchMask.width) - brushSizePx / 2;
-        int y = Mathf.RoundToInt(uv.y * scratchMask.height) - brushSizePx / 2;
+        var prev = RenderTexture.active;
+        RenderTexture.active = scratchRT;
 
-        x = Mathf.Clamp(x, 0, scratchMask.width - brushSizePx);
-        y = Mathf.Clamp(y, 0, scratchMask.height - brushSizePx);
-
-        // 🔹 Lê ScratchMask (GPU → CPU)
-        RenderTexture.active = scratchMask;
         readback.ReadPixels(
-            new Rect(x, y, brushSizePx, brushSizePx),
-            0, 0, false
+            new Rect(0, 0, scratchRT.width, scratchRT.height),
+            0, 0
         );
         readback.Apply(false, false);
 
-        var scratchPixels = readback.GetRawTextureData<byte>();
-        var diffPixels = diffMask.GetRawTextureData<byte>();
+        RenderTexture.active = prev;
 
-        int valid = 0;
-        int total = scratchPixels.Length;
+        var scratch = readback.GetRawTextureData<byte>();
+        var diff = diffMask.GetRawTextureData<byte>();
 
-        for (int i = 0; i < total; i++)
+        int revealed = 0;
+        int total = 0;
+
+        for (int i = 0; i < scratch.Length; i++)
         {
-            bool scratched = scratchPixels[i] > 200;
-            bool allowed = diffPixels[i] > 200;
+            bool allowed = diff[i] > 200;
+            if (!allowed) continue;
 
-            if (scratched && allowed)
-                valid++;
+            total++;
+
+            if (scratch[i] > 200)
+                revealed++;
         }
 
-        float ratio = valid / (float)total;
-        return ratio >= threshold;
+        return (float)revealed / total;
     }
 
-    void EnsureReadback(int size)
+
+    void EnsureReadback(int w, int h)
     {
         if (readback != null &&
-            readback.width == size &&
-            readback.height == size)
+            readback.width == w &&
+            readback.height == h)
             return;
 
         if (readback != null)
             Object.Destroy(readback);
 
         readback = new Texture2D(
-            size, size,
+            w, h,
             TextureFormat.R8,
             false, true
         );
