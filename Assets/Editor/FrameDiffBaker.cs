@@ -38,8 +38,8 @@ public static class FrameDiffBaker
         data.framesPerArray = framesPerArray;
         data.diffs = new float[framesPerArray * 2 - 1];
 
-        //Texture2DArray diffMasksA = new Texture2DArray(layerA.width, layerA.height, framesPerArray, TextureFormat.R8, false, true);
-        //Texture2DArray diffMasksB = new Texture2DArray(layerB.width, layerB.height, framesPerArray, TextureFormat.R8, false, true);
+        Texture2DArray diffMasksA = new Texture2DArray(layerA.width, layerA.height, framesPerArray, TextureFormat.R8, false, true);
+        Texture2DArray diffMasksB = new Texture2DArray(layerB.width, layerB.height, framesPerArray, TextureFormat.R8, false, true);
 
         int index = 0;
 
@@ -49,9 +49,9 @@ public static class FrameDiffBaker
             Texture2D tex1 = Extract(layerA, i);
             Texture2D tex2 = Extract(layerA, i + 1);
 
-            //Texture2D mask = BuildDiffMask(tex1, tex2);
+            Texture2D mask = BuildDiffMask(tex1, tex2);
 
-            //Graphics.CopyTexture(mask, 0, 0, diffMasksA, i, 0);
+            Graphics.CopyTexture(mask, 0, 0, diffMasksA, i, 0);
 
             data.diffs[index++] = ComputeDiff(tex1, tex2);
 
@@ -61,9 +61,9 @@ public static class FrameDiffBaker
         Texture2D texture1 = Extract(layerA, framesPerArray - 1);
         Texture2D texture2 = Extract(layerB, 0);
 
-        //Texture2D diffMask = BuildDiffMask(texture1, texture2);
+        Texture2D diffMask = BuildDiffMask(texture1, texture2);
 
-        //Graphics.CopyTexture(diffMask, 0, 0, diffMasksA, framesPerArray - 1, 0);
+        Graphics.CopyTexture(diffMask, 0, 0, diffMasksA, framesPerArray - 1, 0);
 
         data.diffs[index++] = ComputeDiff(texture1, texture2);
 
@@ -73,9 +73,9 @@ public static class FrameDiffBaker
             Texture2D tex1 = Extract(layerB, i);
             Texture2D tex2 = Extract(layerB, i + 1);
 
-           // Texture2D mask = BuildDiffMask(tex1, tex2);
+            Texture2D mask = BuildDiffMask(tex1, tex2);
 
-            //Graphics.CopyTexture(mask, 0, 0, diffMasksB, i, 0);
+            Graphics.CopyTexture(mask, 0, 0, diffMasksB, i, 0);
 
             data.diffs[index++] = ComputeDiff(tex1, tex2);
         }
@@ -86,7 +86,7 @@ public static class FrameDiffBaker
             "Assets/FrameDiffData.asset"
         );
 
-        /*AssetDatabase.CreateAsset(
+        AssetDatabase.CreateAsset(
             diffMasksA,
             "Assets/diffMasksA.asset"
         );
@@ -95,7 +95,7 @@ public static class FrameDiffBaker
         AssetDatabase.CreateAsset(
             diffMasksB,
             "Assets/diffMasksB.asset"
-        );*/
+        );
 
         AssetDatabase.SaveAssets();
 
@@ -144,7 +144,7 @@ public static class FrameDiffBaker
         return diff / (float)pa.Length;
     }
 
-    /*public static Texture2D BuildDiffMask( Texture2D a, Texture2D b, float pixelThreshold = 0.05f)
+    public static Texture2D BuildDiffMask( Texture2D a, Texture2D b, float pixelThreshold = 0.05f)
     {
         int w = a.width;
         int h = a.height;
@@ -175,5 +175,5 @@ public static class FrameDiffBaker
         mask.SetPixels32(outPixels);
         mask.Apply(false, false);
         return mask;
-    }*/
+    }
 }

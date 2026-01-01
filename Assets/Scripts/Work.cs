@@ -6,7 +6,8 @@ using UnityEngine;
 public class Work : ScriptableObject
 {
     public Sprite image;
-    public Texture2DArray[] texture;
+    public Texture2DArray[] painting;
+    public Texture2DArray[] masks;
     public string workName;
     public string author;
     public string age;

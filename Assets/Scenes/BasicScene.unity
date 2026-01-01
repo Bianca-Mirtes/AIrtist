@@ -810,6 +810,7 @@ MonoBehaviour:
   sendAudioBtn: {fileID: 834752792}
   newAudioBtn: {fileID: 1007306607}
   returnBtn: {fileID: 417656778}
+  canRecording: 0
 --- !u!1 &402715431
 GameObject:
   m_ObjectHideFlags: 0
@@ -5262,13 +5263,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a70f9353cd51f5748be1dbeefa3e04be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BrushPainter
-  paintSurfaceLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  screenRenderer: {fileID: 529394751}
-  tip: {fileID: 1510546503}
-  angleToleranceDeg: 25
-  currentBrushDirection: {x: 0, y: 0, z: 0}
 --- !u!1001 &1561471080
 PrefabInstance:
   m_ObjectHideFlags: 0

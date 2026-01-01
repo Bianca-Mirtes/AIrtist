@@ -1,10 +1,12 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
 public class ChooseArtController : MonoBehaviour
 {
-    public Work[] arts;
+    public List<Work> arts;
     public Transform questions;
     public GameObject tutorial;
     public Material artMat;
@@ -13,9 +15,31 @@ public class ChooseArtController : MonoBehaviour
     public Transform content;
 
     private bool clicked = false;
+    public static ChooseArtController _instance;
+
+    public static ChooseArtController Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<ChooseArtController>();
+
+                if (_instance == null)
+                {
+                    GameObject singleton = new GameObject("DialogueManager");
+                    _instance = singleton.AddComponent<ChooseArtController>();
+                    DontDestroyOnLoad(singleton);
+                }
+            }
+
+            return _instance;
+        }
+    }
 
     private void Start()
     {
+        // pré gerados
         foreach (var work in arts)
         {
             GameObject btn = Instantiate(buttonPrefab, content);
@@ -30,10 +54,13 @@ public class ChooseArtController : MonoBehaviour
     {
         if (!clicked)
         {
-            artMat.SetTexture("_LayerA", work.texture[0]);
-            artMat.SetTexture("_LayerB", work.texture[1]);
+            artMat.SetTexture("_LayerA", work.painting[0]);
+            artMat.SetTexture("_LayerB", work.painting[1]);
+            artMat.SetTexture("_LayerA_DiffMasks", work.masks[0]);
+            artMat.SetTexture("_LayerB_DiffMasks", work.masks[1]);
 
- 
+            FindFirstObjectByType<ScratchLayerManager>().SetArrays(work.painting[0], work.painting[1], work.masks[0], work.masks[1]);
+
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
             //FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
 
@@ -48,6 +75,27 @@ public class ChooseArtController : MonoBehaviour
     private void ResetClick()
     {
         clicked = false;
+    }
+
+    public void CreateNewArt(Texture2DArray arrayA, Texture2DArray arrayB, Texture2DArray maskA, Texture2DArray maskB, string authorName, string workName, string workAge, Sprite workImage)
+    {
+        GameObject btn = Instantiate(buttonPrefab, content);
+        Work work = new Work();
+        work.painting[0] = arrayA;
+        work.painting[1] = arrayB;
+        work.masks[0] = maskA;
+        work.masks[1] = maskB;
+
+        work.author = authorName;
+        work.workName = workName;
+        work.age = workAge;
+        work.image = workImage;
+        arts.Add(work);
+        
+        string description = work.workName + "\n" + work.author + ", " + work.age;
+        btn.GetComponent<Image>().sprite = work.image;
+        btn.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = description;
+        btn.GetComponent<Button>().onClick.AddListener(() => Choose(work));
     }
 
     public void StartPractise()
