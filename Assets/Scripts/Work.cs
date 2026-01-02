@@ -11,9 +11,10 @@ public class Work : ScriptableObject
     public string workName;
     public string author;
     public string age;
-
-    public Question[] awnsers;
+    public string txtInfos;
+    public bool isLocal = true;
     public int resWidth;
     public int resHeight;
-    public TextAsset vectors;
+
+    public Question[] awnsers;
 }

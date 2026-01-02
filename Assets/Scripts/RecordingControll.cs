@@ -159,12 +159,12 @@ public class RecordingController : MonoBehaviour
             // converte para Base64
             string base64Audio = Convert.ToBase64String(wavData);
 
-            PayloadAudioGeneration payload = new PayloadAudioGeneration { audio_base64 = base64Audio, session_id = 0};
+            PayloadAudioGeneration payload = new PayloadAudioGeneration { audio_base64 = base64Audio};
 
             // 4) Serializa para JSON
             string json = JsonUtility.ToJson(payload);
 
-            string url = $"{baseUrl}/generate_3d_64";
+            string url = $"{baseUrl}/generate_new_work";
             // envia para API
             StartCoroutine(SendToAPI(json, url));
 
@@ -234,7 +234,7 @@ public class RecordingController : MonoBehaviour
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                Model3DResponse response = JsonUtility.FromJson<Model3DResponse>(request.downloadHandler.text);
+                Response response = JsonUtility.FromJson<Response>(request.downloadHandler.text);
                 description.text = "New work generated! See in \"Choose a work\"";
                 spinner.SetActive(false);
                 isWaiting = false;
@@ -248,17 +248,14 @@ public class RecordingController : MonoBehaviour
     public class PayloadAudioGeneration
     {
         public string audio_base64;
-        public int session_id;
     }
 
 
     [Serializable]
-    public class Model3DResponse
+    public class Response
     {
-        public string status;
-        public string message;
-        public string glb_base64;
-        public string image_base64;
+        public byte[] zip;
+        public string txtInfos;
     }
 
     private void NewAudio()

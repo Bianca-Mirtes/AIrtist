@@ -27,7 +27,7 @@ public class ChooseArtController : MonoBehaviour
 
                 if (_instance == null)
                 {
-                    GameObject singleton = new GameObject("DialogueManager");
+                    GameObject singleton = new GameObject("ChooseArtController");
                     _instance = singleton.AddComponent<ChooseArtController>();
                     DontDestroyOnLoad(singleton);
                 }
