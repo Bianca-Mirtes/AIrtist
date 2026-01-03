@@ -2,22 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using WorkData;
 
 public class ScratchLayerManager : MonoBehaviour
 {
     [Header("Render")]
     public Renderer target;
 
-    [Header("Frames")]
-    public int framesPerArray = 200;
-    public int totalFrames = 400;
-    public Texture2DArray layerA, layerB;
-
     [Header("Scratch Mask")]
     public RenderTexture activeMask;
-    public Texture2DArray layerA_DiffMasks;
-    public Texture2DArray layerB_DiffMasks;
-
     public VRBrushPainter brush;
 
     [Header("Final")]
@@ -25,77 +18,137 @@ public class ScratchLayerManager : MonoBehaviour
     public GameObject UI;
 
     MaterialPropertyBlock mpb;
-    int globalFrame=0;
+
+    private int totalFrames = 400;
+    int globalFrame;
+    public bool isLocal = true;
+    public float diffAmount;
+
+    Texture2D paintingCurrent;
+    Texture2D paintingNext;
+
+    Texture2D maskCurrent;
+    Texture2D maskNext;
 
     public int GlobalFrame => globalFrame;
+
+    public static ScratchLayerManager _instance;
+
+    public static ScratchLayerManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<ScratchLayerManager>();
+
+                if (_instance == null)
+                {
+                    GameObject singleton = new GameObject("ScratchLayerManager");
+                    _instance = singleton.AddComponent<ScratchLayerManager>();
+                    DontDestroyOnLoad(singleton);
+                }
+            }
+
+            return _instance;
+        }
+    }
 
     void Awake()
     {
         mpb = new MaterialPropertyBlock();
     }
 
+    public void SetInitialFrames(Texture2D currentPainting, Texture2D nextPainting, Texture2D currentMask, Texture2D nextMask)
+    {
+        paintingCurrent = currentPainting;
+        paintingNext = nextPainting;
+
+        maskCurrent = currentMask;
+        maskNext = nextMask;
+
+        diffAmount = ComputeDiff();
+
+        ApplyToMaterial();
+        brush.currentDiffMask = maskCurrent;
+    }
+
+    public void SetTotalFrames(int value)
+    {
+        totalFrames = value;
+    }
+
+    // =================== FRAME ADVANCE ===================
+
     public void AdvanceFrame()
     {
-        globalFrame++;
-
-        int localFrame;
-        int useLayerB;
-
-        if (globalFrame < framesPerArray)
+        if (globalFrame == totalFrames - 1)
         {
-            localFrame = globalFrame;
-            useLayerB = 0;
-            ExtractDiffMaskSlice(layerA_DiffMasks, localFrame);
+            confetti?.Play();
+            UI?.SetActive(true);
+            return;
+        }
+
+        globalFrame++;
+        // swap
+        paintingCurrent = paintingNext;
+        maskCurrent = maskNext;
+
+        if (!isLocal) {
+            WorkAPI api = (WorkAPI)ChooseArtController.Instance.GetCurrentWork();
+            (Texture2D, Texture2D) newNextTex = FindFirstObjectByType<FrameZipLoader>().LoadNextFrame(api.painting, api.masks, globalFrame);
+            paintingNext = newNextTex.Item1;
+            maskNext = newNextTex.Item2;
         }
         else
         {
-            localFrame = globalFrame - framesPerArray;
-            useLayerB = 1;
-            ExtractDiffMaskSlice(layerB_DiffMasks, localFrame);
+            Work work = (Work)ChooseArtController.Instance.GetCurrentWork();
+            paintingNext = work.painting[globalFrame + 1];
+            maskNext = work.masks[globalFrame + 1];
         }
 
-        mpb.SetInt("_FrameIndex", localFrame);
-        mpb.SetInt("_UseLayerB", useLayerB);
-        target.SetPropertyBlock(mpb);
+        diffAmount = ComputeDiff();
 
-        // 🔹 limpa máscara UMA vez apenas
+        ApplyToMaterial();
+        brush.currentDiffMask = maskCurrent;
+
         ClearMask();
 
-        if (useLayerB == 1 && globalFrame >= 399)
+        Debug.Log($"🖌 Frame atual: {globalFrame}");
+    }
+
+    // =================== MATERIAL ===================
+
+    void ApplyToMaterial()
+    {
+        mpb.SetTexture("_MainTex", paintingCurrent);
+        mpb.SetTexture("_NextTex", paintingNext);
+        mpb.SetTexture("_Mask", maskCurrent);
+        mpb.SetTexture("_ScratchMask", activeMask);
+
+        target.SetPropertyBlock(mpb);
+    }
+
+    public float ComputeDiff()
+    {
+        var pa = paintingCurrent.GetPixels32();
+        var pb = paintingNext.GetPixels32();
+
+        int diff = 0;
+
+        for (int i = 0; i < pa.Length; i++)
         {
-            confetti.Play();
-            UI.SetActive(true);
+            float d =
+                (Mathf.Abs(pa[i].r - pb[i].r) +
+                 Mathf.Abs(pa[i].g - pb[i].g) +
+                 Mathf.Abs(pa[i].b - pb[i].b)) / (3f * 255f);
+
+            if (d > 0.05f)
+                diff++;
         }
 
-        Debug.Log($"Frame atual: {globalFrame}");
+        return diff / (float)pa.Length;
     }
-
-    public void SetArrays(Texture2DArray array1, Texture2DArray array2, Texture2DArray mask1, Texture2DArray mask2)
-    {
-        layerA = array1;
-        layerB = array2;
-        layerA_DiffMasks = mask1;
-        layerB_DiffMasks = mask2;
-
-        ExtractDiffMaskSlice(layerA, globalFrame);
-    }
-
-    void ExtractDiffMaskSlice(Texture2DArray src, int slice)
-    {
-        Texture2D tex = new Texture2D(
-            src.width,
-            src.height,
-            TextureFormat.R8,
-            false,
-            true
-        );
-
-        Graphics.CopyTexture(src, slice, 0, tex, 0, 0);
-        tex.Apply(false, false);
-
-        brush.currentDiffMask = tex;
-    }
-
 
     void ClearMask()
     {
@@ -105,5 +158,10 @@ public class ScratchLayerManager : MonoBehaviour
         RenderTexture.active = activeMask;
         GL.Clear(false, true, Color.black);
         RenderTexture.active = prev;
+    }
+
+    private void OnDestroy()
+    {
+        mpb.Clear();
     }
 }

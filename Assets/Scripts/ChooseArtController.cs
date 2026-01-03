@@ -1,18 +1,24 @@
 using System.Collections.Generic;
+using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using TMPro;
+using Unity.Burst.Intrinsics;
 using UnityEngine;
 using UnityEngine.UI;
+using WorkData;
 using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
 public class ChooseArtController : MonoBehaviour
 {
     public List<Work> arts;
+    public List<WorkAPI> artsWithApi;
     public Transform questions;
     public GameObject tutorial;
     public Material artMat;
 
     public GameObject buttonPrefab;
     public Transform content;
+    private object currentWork;
 
     private bool clicked = false;
     public static ChooseArtController _instance;
@@ -54,18 +60,41 @@ public class ChooseArtController : MonoBehaviour
     {
         if (!clicked)
         {
-            artMat.SetTexture("_LayerA", work.painting[0]);
-            artMat.SetTexture("_LayerB", work.painting[1]);
-            artMat.SetTexture("_LayerA_DiffMasks", work.masks[0]);
-            artMat.SetTexture("_LayerB_DiffMasks", work.masks[1]);
+            currentWork = work;
+            ScratchLayerManager.Instance.isLocal = true;
+            ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
 
-            FindFirstObjectByType<ScratchLayerManager>().SetArrays(work.painting[0], work.painting[1], work.masks[0], work.masks[1]);
+            artMat.SetTexture("_MainTex", work.painting[0]);
+            artMat.SetTexture("_NextTex", work.painting[1]);
+            artMat.SetTexture("_Mask", work.masks[0]);
+
+            FindFirstObjectByType<ScratchLayerManager>().SetInitialFrames(work.painting[0], work.painting[1], work.masks[0], work.masks[1]);
 
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
-            //FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
+            FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
 
             transform.GetChild(1).gameObject.SetActive(false);
-            //transform.GetChild(3).gameObject.SetActive(true);
+            transform.GetChild(3).gameObject.SetActive(true);
+
+            clicked = true;
+            Invoke("ResetClick", 2f);
+        }
+    }
+
+    public object GetCurrentWork()
+    {
+        return currentWork;
+    }
+
+    public void Choose(WorkAPI work)
+    {
+        if (!clicked)
+        {
+            currentWork = work;
+            ScratchLayerManager.Instance.isLocal = false;
+            ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
+
+            transform.GetChild(1).gameObject.SetActive(false);
 
             clicked = true;
             Invoke("ResetClick", 2f);
@@ -77,20 +106,19 @@ public class ChooseArtController : MonoBehaviour
         clicked = false;
     }
 
-    public void CreateNewArt(Texture2DArray arrayA, Texture2DArray arrayB, Texture2DArray maskA, Texture2DArray maskB, string authorName, string workName, string workAge, Sprite workImage)
+    public void CreateNewArt(List<ZipArchiveEntry> arrays, List<ZipArchiveEntry> masks, string authorName, string workName, string workAge, Sprite workImage)
     {
         GameObject btn = Instantiate(buttonPrefab, content);
-        Work work = new Work();
-        work.painting[0] = arrayA;
-        work.painting[1] = arrayB;
-        work.masks[0] = maskA;
-        work.masks[1] = maskB;
+        WorkAPI work = new WorkAPI();
+        work.painting = arrays;
+        work.masks = masks;
 
         work.author = authorName;
         work.workName = workName;
         work.age = workAge;
+
         work.image = workImage;
-        arts.Add(work);
+        artsWithApi.Add(work);
         
         string description = work.workName + "\n" + work.author + ", " + work.age;
         btn.GetComponent<Image>().sprite = work.image;
@@ -103,11 +131,5 @@ public class ChooseArtController : MonoBehaviour
         questions.GetChild(0).gameObject.SetActive(true);
         transform.GetChild(3).gameObject.SetActive(false);
         tutorial.SetActive(true);
-    }
-
-    private void OnDestroy()
-    {
-        artMat.SetInt("_FrameIndex", 0);
-        artMat.SetInt("_UseLayerB", 0);
     }
 }

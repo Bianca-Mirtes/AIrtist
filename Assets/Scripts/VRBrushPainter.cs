@@ -7,7 +7,7 @@ public class VRBrushPainter : MonoBehaviour
     [Header("Brush Setup")]
     public Transform brushTip;
     public float maxDistance = 0.1f;
-    public float brushSize = 0.1f;
+    public float brushSize = 0.02f;
     public Texture2D brushTexture;
     public Color paintColor = Color.white;
 
@@ -22,15 +22,11 @@ public class VRBrushPainter : MonoBehaviour
     BrushStampAnalyzer analyzer;
     float lastStrokeTime;
 
-    public FrameDiffData frameDiffData;
     public Texture2D currentDiffMask;
-    float[] frameDiffs;
-
     void Start()
     {
         paintMat = new Material(Shader.Find("Hidden/BrushPainter"));
         analyzer = new BrushStampAnalyzer();
-        frameDiffs = frameDiffData.diffs;
     }
 
     void Update()
@@ -54,29 +50,28 @@ public class VRBrushPainter : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
             {
                 TryPaint(hit.textureCoord);
-            }
-        }
-        if (Input.GetKeyUp(KeyCode.P)) {
-
-            if (frameDiffs[scratchManager.GlobalFrame] < 0.01f)
-            {
-                scratchManager.AdvanceFrame();
-            }
-            else
-            {
-                float progress = analyzer.CalculateProgress(
-                    scratchManager.activeMask,
-                    currentDiffMask
-                );
-
-                if (progress >= 0.98f)
+                if (scratchManager.diffAmount < 0.015f)
                 {
                     scratchManager.AdvanceFrame();
                 }
+                else
+                {
+                    float progress = analyzer.CalculateProgress(
+                        scratchManager.activeMask,
+                        currentDiffMask
+                    );
+
+                    Debug.Log("Progress: " + progress);
+
+                    if (progress >= 0.98f)
+                    {
+                        scratchManager.AdvanceFrame();
+                    }
+                }
             }
         }
-
     }
+
     void TryPaint(Vector2 uv)
     {
         if (Time.time - lastStrokeTime < strokeInterval)

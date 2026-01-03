@@ -159,7 +159,7 @@ public class RecordingController : MonoBehaviour
             // converte para Base64
             string base64Audio = Convert.ToBase64String(wavData);
 
-            PayloadAudioGeneration payload = new PayloadAudioGeneration { audio_base64 = base64Audio};
+            Request payload = new Request { audio_base64 = base64Audio};
 
             // 4) Serializa para JSON
             string json = JsonUtility.ToJson(payload);
@@ -245,7 +245,7 @@ public class RecordingController : MonoBehaviour
     }
 
     [Serializable]
-    public class PayloadAudioGeneration
+    public class Request
     {
         public string audio_base64;
     }

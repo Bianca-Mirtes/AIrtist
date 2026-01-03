@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO.Compression;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,13 +7,12 @@ using UnityEngine;
 public class Work : ScriptableObject
 {
     public Sprite image;
-    public Texture2DArray[] painting;
-    public Texture2DArray[] masks;
+    public List<Texture2D> painting;
+    public List<Texture2D> masks;
     public string workName;
     public string author;
     public string age;
-    public string txtInfos;
-    public bool isLocal = true;
+    public TextAsset txtInfos;
     public int resWidth;
     public int resHeight;
 

@@ -22,13 +22,18 @@ public class BrushStampAnalyzer
 
         RenderTexture.active = prev;
 
+        Texture2D diffMks = ConvertToR8(diffMask);
+
         var scratch = readback.GetRawTextureData<byte>();
-        var diff = diffMask.GetRawTextureData<byte>();
+        var diff = diffMks.GetRawTextureData<byte>();
+
+        Debug.Log("Scratch: "+ scratch.Length);
+        Debug.Log("diffMask: "+  diff.Length);
 
         int revealed = 0;
         int total = 0;
 
-        for (int i = 0; i < scratch.Length; i++)
+        for (int i = 0; i < diff.Length; i++)
         {
             bool allowed = diff[i] > 200;
             if (!allowed) continue;
@@ -41,6 +46,32 @@ public class BrushStampAnalyzer
 
         return (float)revealed / total;
     }
+
+    Texture2D ConvertToR8(Texture2D src)
+    {
+        Texture2D dst = new Texture2D(
+            src.width,
+            src.height,
+            TextureFormat.R8,
+            false,
+            true
+        );
+
+        Color32[] pixels = src.GetPixels32();
+        byte[] outData = new byte[pixels.Length];
+
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            // qualquer canal serve (R, G ou B)
+            outData[i] = pixels[i].r;
+        }
+
+        dst.LoadRawTextureData(outData);
+        dst.Apply(false, false);
+
+        return dst;
+    }
+
 
 
     void EnsureReadback(int w, int h)
