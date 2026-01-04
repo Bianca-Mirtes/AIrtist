@@ -820,8 +820,8 @@ MonoBehaviour:
   author: Vicent Van Gogh
   age: 1890
   txtInfos: {fileID: 0}
-  resWidth: 0
-  resHeight: 0
+  resWidth: 750
+  resHeight: 365
   awnsers:
   - {fileID: 11400000, guid: 5a006dede46c7644e8f04e17696601f4, type: 2}
   - {fileID: 11400000, guid: 2ded425a514968c4b87d9fb8d4c488e4, type: 2}

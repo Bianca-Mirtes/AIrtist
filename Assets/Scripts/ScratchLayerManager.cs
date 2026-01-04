@@ -57,6 +57,8 @@ public class ScratchLayerManager : MonoBehaviour
     void Awake()
     {
         mpb = new MaterialPropertyBlock();
+        mpb.SetFloat("_HasFrames", 1);
+
     }
 
     public void SetInitialFrames(Texture2D currentPainting, Texture2D nextPainting, Texture2D currentMask, Texture2D nextMask)
@@ -160,8 +162,10 @@ public class ScratchLayerManager : MonoBehaviour
         RenderTexture.active = prev;
     }
 
-    private void OnDestroy()
+    void OnDestroy()
     {
         mpb.Clear();
+        mpb.SetFloat("_HasFrames", 0);
+        target.SetPropertyBlock(mpb);
     }
 }

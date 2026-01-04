@@ -94,7 +94,16 @@ public class ChooseArtController : MonoBehaviour
             ScratchLayerManager.Instance.isLocal = false;
             ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
 
+            Texture2D firstTex = FindFirstObjectByType<FrameZipLoader>().LoadFrame(work.painting[0]);
+            Texture2D secondTex = FindFirstObjectByType<FrameZipLoader>().LoadFrame(work.painting[1]);
+
+            Texture2D firstMask = FindFirstObjectByType<FrameZipLoader>().LoadFrame(work.masks[0]);
+            Texture2D secondMask = FindFirstObjectByType<FrameZipLoader>().LoadFrame(work.masks[1]);
+
+            FindFirstObjectByType<ScratchLayerManager>().SetInitialFrames(firstTex, secondTex, firstMask, secondMask);
+
             transform.GetChild(1).gameObject.SetActive(false);
+            StartPractise();
 
             clicked = true;
             Invoke("ResetClick", 2f);

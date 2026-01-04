@@ -98,7 +98,7 @@ public class FrameZipLoader : MonoBehaviour
 
     // ================= UTILS =================
 
-    Texture2D LoadFrame(ZipArchiveEntry entry)
+    public Texture2D LoadFrame(ZipArchiveEntry entry)
     {
         string path = Path.Combine(workDir, entry.Name);
         entry.ExtractToFile(path, true);

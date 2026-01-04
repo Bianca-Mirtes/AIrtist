@@ -11,6 +11,8 @@
         _OverlayColor ("Overlay Color", Color) = (1,1,1,0.35)
         _OverlayStrength ("Overlay Strength", Range(0,1)) = 1
         _DiffThreshold ("Diff Threshold", Range(0,0.2)) = 0.05
+
+        _HasFrames ("Has Frames", Float) = 0
     }
 
     SubShader
@@ -37,6 +39,8 @@
             float _OverlayStrength;
             float _DiffThreshold;
 
+            float _HasFrames;
+
             struct appdata
             {
                 float4 vertex : POSITION;
@@ -59,6 +63,11 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
+                if (_HasFrames < 0.5)
+                {
+                    discard; // ou return 0;
+                }
+
                 // 🔹 Frames
                 fixed4 colCurr = tex2D(_MainTex, i.uv);
                 fixed4 colNext = tex2D(_NextTex, i.uv);
