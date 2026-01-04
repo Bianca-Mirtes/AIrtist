@@ -31,19 +31,10 @@ public class VRBrushPainter : MonoBehaviour
 
     void Update()
     {
-        /*InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
+        InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
         InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
         devices[0].TryGetFeatureValue(CommonUsages.trigger, out float triggerValue);
         if (triggerValue > 0.2f)
-        {
-            Ray ray = new Ray(brushTip.position, brushTip.forward);
-
-            if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
-            {
-                TryPaint(hit.textureCoord);
-            }
-        }*/
-        if (Input.GetKeyDown(KeyCode.P))
         {
             Ray ray = new Ray(brushTip.position, brushTip.forward);
 
@@ -70,6 +61,33 @@ public class VRBrushPainter : MonoBehaviour
                 }
             }
         }
+        /*if (Input.GetKeyDown(KeyCode.P))
+        {
+            Ray ray = new Ray(brushTip.position, brushTip.forward);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
+            {
+                TryPaint(hit.textureCoord);
+                if (scratchManager.diffAmount < 0.015f)
+                {
+                    scratchManager.AdvanceFrame();
+                }
+                else
+                {
+                    float progress = analyzer.CalculateProgress(
+                        scratchManager.activeMask,
+                        currentDiffMask
+                    );
+
+                    Debug.Log("Progress: " + progress);
+
+                    if (progress >= 0.98f)
+                    {
+                        scratchManager.AdvanceFrame();
+                    }
+                }
+            }
+        }*/
     }
 
     void TryPaint(Vector2 uv)

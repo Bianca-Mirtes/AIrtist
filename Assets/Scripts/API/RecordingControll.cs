@@ -56,7 +56,7 @@ public class RecordingController : MonoBehaviour
 
     void Start()
     {
-        baseUrl = "https://56db40c06287.ngrok-free.app";
+        baseUrl = "https://d637cee04ec4.ngrok-free.app";
         // Se ainda não tem a permissão, pede
         if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
         {
@@ -87,6 +87,7 @@ public class RecordingController : MonoBehaviour
             {
                 Stop();
             }
+            canRecording = false;
         }
 #else
         if(canRecording){
@@ -104,6 +105,7 @@ public class RecordingController : MonoBehaviour
             }
 
             lastPressed = isPressed;
+            canRecording = false;   
         }
 #endif
     }
@@ -140,6 +142,7 @@ public class RecordingController : MonoBehaviour
     private void ReturnStep()
     {
         wasVisualize = false;
+        canRecording = true;
         ResetSend();
         description.text = "Press Y to start recording...";
         transform.GetChild(2).gameObject.SetActive(false);
@@ -164,7 +167,7 @@ public class RecordingController : MonoBehaviour
             // 4) Serializa para JSON
             string json = JsonUtility.ToJson(payload);
 
-            string url = $"{baseUrl}/generate_new_work";
+            string url = $"{baseUrl}/paint";
             // envia para API
             StartCoroutine(SendToAPI(json, url));
 
@@ -265,6 +268,7 @@ public class RecordingController : MonoBehaviour
             description.text = "Press Y to start recording...";
             wasSend = false;
             wasVisualize = false;
+            canRecording = true;
         }
     }
 }
