@@ -67,9 +67,11 @@ public class FrameZipLoader : MonoBehaviour
         Texture2D paintingCurrent = LoadFrame(paintingEntries[0]);
         Texture2D maskCurrent = LoadFrame(maskEntries[0]);
 
+        Texture2D image = LoadFrame(paintingEntries[paintingEntries.Count-1]);
+
         workImage = Sprite.Create(
-            paintingCurrent,
-            new Rect(0, 0, paintingCurrent.width, paintingCurrent.height),
+            image,
+            new Rect(0, 0, image.width, image.height),
             new Vector2(0.5f, 0.5f),
             100
         );

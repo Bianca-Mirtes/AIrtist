@@ -238,6 +238,7 @@ public class RecordingController : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 Response response = JsonUtility.FromJson<Response>(request.downloadHandler.text);
+                FindFirstObjectByType<FrameZipLoader>().LoadFromZipBytes(response.zip, response.txtInfos);
                 description.text = "New work generated! See in \"Choose a work\"";
                 spinner.SetActive(false);
                 isWaiting = false;
