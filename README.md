@@ -36,11 +36,11 @@ Para as **obras pré-geradas de Van Gogh**, o usuário passa por um momento inic
 
 Além das obras pré-geradas, o **AIrtist** permite:
 
-- Criar uma **nova obra a partir de áudio**
-- O usuário descreve verbalmente a obra desejada
-- A pintura é gerada automaticamente
-- A nova obra é **adicionada à lista de obras disponíveis**
-- O usuário pode pintá-la normalmente
+- Criar uma **nova obra a partir de áudio**;
+- O usuário descreve verbalmente a obra desejada, pressionando o **botão Y** no Joystick do Meta Quest para iniciar a gravação. A gravação é encerrada ao soltar o botão;
+- A pintura é gerada automaticamente;
+- A nova obra é **adicionada à lista de obras disponíveis**;
+- O usuário pode pintá-la normalmente;
 
 ⚠️ **Observação:**  
 Para obras geradas via áudio, **não há momento de explanação artística**, pois:
@@ -68,7 +68,7 @@ O fluxo da experiência no **Meta Quest** é o seguinte:
 
 3. **Interação com Pintura**
    - O usuário pega um **pincel virtual**;
-   - A pintura é ativada ao pressionar o **botão Y** do Meta Quest;
+   - A pincelada é feita ao pressionar o **botão Trigger** no Joystick do Meta Quest;
    - Um **overlay branco** indica a área que deve ser pintada naquele momento;
    - Ao completar a região corretamente, o sistema avança para o próximo frame.
 
