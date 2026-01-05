@@ -162,10 +162,11 @@ public class ScratchLayerManager : MonoBehaviour
         RenderTexture.active = prev;
     }
 
-    void OnDestroy()
+    void OnDisable()
     {
         mpb.Clear();
         mpb.SetFloat("_HasFrames", 0);
+        ClearMask();
         target.SetPropertyBlock(mpb);
     }
 }
