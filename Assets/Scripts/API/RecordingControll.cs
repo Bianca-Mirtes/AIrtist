@@ -87,7 +87,6 @@ public class RecordingController : MonoBehaviour
             {
                 Stop();
             }
-            canRecording = false;
         }
 #else
         if(canRecording){
@@ -105,7 +104,6 @@ public class RecordingController : MonoBehaviour
             }
 
             lastPressed = isPressed;
-            canRecording = false;   
         }
 #endif
     }
