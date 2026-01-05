@@ -77,7 +77,7 @@ public class RecordingController : MonoBehaviour
     private void Update()
     {
 #if UNITY_EDITOR
-        if (canRecording)
+        /*if (canRecording)
         {
             if (Input.GetKeyDown(KeyCode.L) && !isRecording)
             {
@@ -87,6 +87,24 @@ public class RecordingController : MonoBehaviour
             {
                 Stop();
             }
+        }*/
+
+        if (canRecording)
+        {
+            InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
+            InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
+            devices[0].TryGetFeatureValue(CommonUsages.secondaryButton, out bool isPressed);
+
+            if (isPressed && !lastPressed && !isRecording)
+            {
+                StartRecording();
+            }
+            if (!isPressed && lastPressed && isRecording)
+            {
+                Stop();
+            }
+
+            lastPressed = isPressed;
         }
 #else
         if(canRecording){
