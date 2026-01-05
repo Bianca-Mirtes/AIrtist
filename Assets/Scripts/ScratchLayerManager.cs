@@ -88,6 +88,7 @@ public class ScratchLayerManager : MonoBehaviour
         {
             confetti?.Play();
             UI?.SetActive(true);
+            ChooseArtController.Instance.ResetBrush();
             return;
         }
 

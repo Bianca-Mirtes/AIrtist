@@ -110,7 +110,7 @@ public class DialogueManager : MonoBehaviour
         Debug.Log("End Dialog");
         if (currentTrigger == 1)
         {
-            FindAnyObjectByType<ChooseArtController>().StartPractise();
+            ChooseArtController.Instance.StartPractise();
         }
         else {
             FindAnyObjectByType<ExplanationController>().NextQuestion();

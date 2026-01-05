@@ -15,6 +15,7 @@ public class ChooseArtController : MonoBehaviour
     public Transform questions;
     public GameObject tutorial;
     public Material artMat;
+    public GameObject brush;
 
     public GameObject buttonPrefab;
     public Transform content;
@@ -54,6 +55,9 @@ public class ChooseArtController : MonoBehaviour
             btn.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = description;
             btn.GetComponent<Button>().onClick.AddListener(() => Choose(work));
         }
+
+        // brush
+        brush.SetActive(false);
     }
 
     public void Choose(Work work)
@@ -61,6 +65,7 @@ public class ChooseArtController : MonoBehaviour
         if (!clicked)
         {
             currentWork = work;
+            
             ScratchLayerManager.Instance.isLocal = true;
             ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
 
@@ -91,6 +96,7 @@ public class ChooseArtController : MonoBehaviour
         if (!clicked)
         {
             currentWork = work;
+            brush.SetActive(true);
             ScratchLayerManager.Instance.isLocal = false;
             ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
 
@@ -113,6 +119,12 @@ public class ChooseArtController : MonoBehaviour
     private void ResetClick()
     {
         clicked = false;
+    }
+
+    public void ResetBrush()
+    {
+        brush.gameObject.transform.position = new Vector3(-0.479f, 0.785f, -1.011f);
+        brush.gameObject.SetActive(false);
     }
 
     public void CreateNewArt(List<ZipArchiveEntry> arrays, List<ZipArchiveEntry> masks, string authorName, string workName, string workAge, Sprite workImage)
@@ -139,6 +151,7 @@ public class ChooseArtController : MonoBehaviour
     {
         questions.GetChild(0).gameObject.SetActive(true);
         transform.GetChild(3).gameObject.SetActive(false);
+        brush.SetActive(true);
         tutorial.SetActive(true);
     }
 }
