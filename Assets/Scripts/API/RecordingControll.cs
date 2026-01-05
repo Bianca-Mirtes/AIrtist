@@ -158,7 +158,7 @@ public class RecordingController : MonoBehaviour
     private void ReturnStep()
     {
         wasVisualize = false;
-        canRecording = true;
+        canRecording = false;
         ResetSend();
         description.text = "Press Y to start recording...";
         transform.GetChild(2).gameObject.SetActive(false);
@@ -254,7 +254,8 @@ public class RecordingController : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 Response response = JsonUtility.FromJson<Response>(request.downloadHandler.text);
-                FindFirstObjectByType<FrameZipLoader>().LoadFromZipBytes(response.zip, response.txtInfos);
+                byte[] zipBytes = Convert.FromBase64String(response.zip);
+                FindFirstObjectByType<FrameZipLoader>().LoadFromZipBytes(zipBytes, response.txtInfos);
                 description.text = "New work generated! See in \"Choose a work\"";
                 spinner.SetActive(false);
                 isWaiting = false;
@@ -274,7 +275,7 @@ public class RecordingController : MonoBehaviour
     [Serializable]
     public class Response
     {
-        public byte[] zip;
+        public string zip;
         public string txtInfos;
     }
 
