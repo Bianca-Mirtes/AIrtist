@@ -59,7 +59,7 @@ public class RecordingController : MonoBehaviour
 
     void Start()
     {
-        baseUrl = "https://d637cee04ec4.ngrok-free.app";
+        baseUrl = "https://07bab556234b.ngrok-free.app";
         // Se ainda não tem a permissão, pede
         if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
         {
