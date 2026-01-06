@@ -944,6 +944,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fea8d964e395ca4c9279a00c6baf34d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RecordingController
+  audioTest: {fileID: 8300000, guid: 67c440cad7faf1f4b975b7d2fe7a9f55, type: 3}
   spinner: {fileID: 1578133239}
   description: {fileID: 810509177}
   sendAudioBtn: {fileID: 834752792}

@@ -32,7 +32,7 @@ public class VRBrushPainter : MonoBehaviour
     void Update()
     {
 #if UNITY_EDITOR
-        InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
+        /*InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
         InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
         devices[0].TryGetFeatureValue(CommonUsages.trigger, out float triggerValue);
         if (triggerValue > 0.2f)
@@ -61,7 +61,7 @@ public class VRBrushPainter : MonoBehaviour
                     }
                 }
             }
-        }
+        }*/
         /*if (Input.GetKeyDown(KeyCode.P))
         {
             Ray ray = new Ray(brushTip.position, brushTip.forward);

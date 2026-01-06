@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using OpenAI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ public class RecordingController : MonoBehaviour
     private string micDevice;
     private AudioClip recordedClip;
     private AudioClip trimmedClip = null;
+    public AudioClip audioTest;
     private bool isRecording = false;
     private bool lastPressed = false;
     private List<InputDevice> devices = new List<InputDevice>();
@@ -29,6 +31,7 @@ public class RecordingController : MonoBehaviour
     [SerializeField] private Button newAudioBtn = null;
     [SerializeField] private Button returnBtn = null;
     private string baseUrl;
+    private OpenAIApi openai = new OpenAIApi("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");
     private static RecordingController _instance;
     private bool wasSend = false;
     private bool wasVisualize = false;
@@ -88,7 +91,6 @@ public class RecordingController : MonoBehaviour
                 Stop();
             }
         }*/
-
         if (canRecording)
         {
             InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
@@ -165,7 +167,7 @@ public class RecordingController : MonoBehaviour
         transform.GetChild(0).gameObject.SetActive(true);
     }
 
-    private void SendAudio()
+    private async void SendAudio()
     {
         if (trimmedClip == null)
             return;
@@ -175,10 +177,19 @@ public class RecordingController : MonoBehaviour
             // converte para bytes WAV
             byte[] wavData = ConvertToWav(trimmedClip);
 
-            // converte para Base64
-            string base64Audio = Convert.ToBase64String(wavData);
+            var req = new CreateAudioTranscriptionsRequest
+            {
+                FileData = new FileData() { Data = wavData, Name = "audio.wav" },
+                // File = Application.persistentDataPath + "/" + fileName,
+                Model = "whisper-1",
+                Language = "en"
+            };
+            var res = await openai.CreateAudioTranscription(req);
 
-            Request payload = new Request { audio_base64 = base64Audio};
+            // converte para Base64
+            // string base64Audio = Convert.ToBase64String(wavData);
+
+            Request payload = new Request { transcription = res.Text};
 
             // 4) Serializa para JSON
             string json = JsonUtility.ToJson(payload);
@@ -248,8 +259,18 @@ public class RecordingController : MonoBehaviour
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 300;
 
+            Debug.Log(">>> Sending request");
             yield return request.SendWebRequest();
+            Debug.Log("<<< Request finished");
+
+            Debug.Log($"result = {request.result}");
+            Debug.Log($"code = {request.responseCode}");
+            Debug.Log($"error = {request.error}");
+
+            if (request.downloadHandler != null)
+                Debug.Log($"body = {request.downloadHandler.text}");
 
             if (request.result == UnityWebRequest.Result.Success)
             {
@@ -268,7 +289,7 @@ public class RecordingController : MonoBehaviour
     [Serializable]
     public class Request
     {
-        public string audio_base64;
+        public string transcription;
     }
 
 
