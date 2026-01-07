@@ -58,7 +58,6 @@ public class ScratchLayerManager : MonoBehaviour
     {
         mpb = new MaterialPropertyBlock();
         mpb.SetFloat("_HasFrames", 1);
-
     }
 
     public void SetInitialFrames(Texture2D currentPainting, Texture2D nextPainting, Texture2D currentMask, Texture2D nextMask)

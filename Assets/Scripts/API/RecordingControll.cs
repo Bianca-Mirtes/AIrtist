@@ -3,6 +3,7 @@ using OpenAI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,9 +13,12 @@ using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityEngine.XR;
+using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using static UnityEngine.Audio.ProcessorInstance;
 
 public class RecordingController : MonoBehaviour
 {
@@ -32,10 +36,9 @@ public class RecordingController : MonoBehaviour
     [SerializeField] private Button newAudioBtn = null;
     [SerializeField] private Button returnBtn = null;
     private string baseUrl;
-    private OpenAIApi openai = new OpenAIApi("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");
+    private string openAIKey;
     private static RecordingController _instance;
     private bool wasSend = false;
-    private bool wasVisualize = false;
     private bool isWaiting = false;
 
     public bool canRecording = false;
@@ -74,7 +77,7 @@ public class RecordingController : MonoBehaviour
             Debug.LogError("Nenhum microfone encontrado!");
 
         returnBtn.onClick.AddListener(ReturnStep);
-        sendAudioBtn.onClick.AddListener(SendAudio);
+        sendAudioBtn.onClick.AddListener(() => GetAPIKey($"{baseUrl}/apiKey"));
         newAudioBtn.onClick.AddListener(NewAudio);
     }
 
@@ -158,115 +161,6 @@ public class RecordingController : MonoBehaviour
         trimmedClip.SetData(trimmedSamples, 0);
     }
 
-    private void ReturnStep()
-    {
-        wasVisualize = false;
-        canRecording = false;
-        ResetSend();
-        description.text = "Press Y to start recording...";
-        transform.GetChild(2).gameObject.SetActive(false);
-        transform.GetChild(0).gameObject.SetActive(true);
-    }
-
-    private async void SendAudio()
-    {
-        if (trimmedClip == null)
-            return;
-
-        if (!wasSend) 
-        {
-            // converte para bytes WAV
-            byte[] wavData = ConvertToWav(trimmedClip);
-
-            SendAudioToOpenAI(wavData);
-
-            var req = new CreateAudioTranscriptionsRequest
-            {
-                FileData = new FileData() { Data = wavData, Name = "audio.wav" },
-                // File = Application.persistentDataPath + "/" + fileName,
-                Model = "whisper-1",
-                Language = "en"
-            };
-            var res = await openai.CreateAudioTranscription(req);
-
-            // converte para Base64
-            // string base64Audio = Convert.ToBase64String(wavData);
-
-            PaintRequest payload = new PaintRequest {transcription = res.Text == null ? "Generate for me Monalisa of Da Vinci" : res.Text};
-
-            // 4) Serializa para JSON
-            string json = JsonUtility.ToJson(payload);
-
-            string url = $"{baseUrl}/paint";
-            // envia para API
-            StartCoroutine(SendToAPI(json, url));
-            wasSend = true;
-        }
-    }
-
-    IEnumerator SendAudioToOpenAI(byte[] wavData)
-    {
-        string urlOpenAI = "https://api.openai.com/v1/audio/transcriptions";
-
-        WWWForm form = new WWWForm();
-        form.AddBinaryData("file", wavData, "audio.wav", "audio/wav");
-        form.AddField("model", "whisper-1");
-        form.AddField("language", "en");
-
-        using (UnityWebRequest request = UnityWebRequest.Post(urlOpenAI, form))
-        {
-            request.SetRequestHeader(
-                "Authorization",
-                "Bearer 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"
-            );
-
-            // IMPORTANTE: não setar Content-Type manualmente
-            yield return request.SendWebRequest();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError("OpenAI error: " + request.error);
-                Debug.LogError(request.downloadHandler.text);
-                yield break;
-            }
-
-            string json = request.downloadHandler.text;
-            Debug.Log("OpenAI response: " + json);
-
-            // parse simples
-            WhisperResponse response =
-                JsonUtility.FromJson<WhisperResponse>(json);
-
-            Debug.Log("Texto transcrito: " + response.text);
-
-            // segue seu fluxo normal
-            PaintRequest payload = new PaintRequest
-            {
-                transcription = response.text
-            };
-
-            string url = $"{baseUrl}/paint";
-            string payloadJson = JsonUtility.ToJson(payload);
-            StartCoroutine(
-                SendToAPI(payloadJson, url)
-            );
-            wasSend = true;
-        }
-    }
-
-    [Serializable]
-    public class WhisperResponse
-    {
-        public string text;
-    }
-
-
-    private void ResetSend()
-    {
-        wasSend = false;
-        trimmedClip = null;
-    }
-
     byte[] ConvertToWav(AudioClip clip)
     {
         MemoryStream stream = new MemoryStream();
@@ -306,6 +200,128 @@ public class RecordingController : MonoBehaviour
         return stream.ToArray();
     }
 
+    private void ReturnStep()
+    {
+        canRecording = false;
+        ResetSend();
+        description.text = "Press Y to start recording...";
+        transform.GetChild(2).gameObject.SetActive(false);
+        transform.GetChild(0).gameObject.SetActive(true);
+    }
+
+    IEnumerator GetAPIKey(string openAIUrl)
+    {
+        description.text = "Getting the OpenAI Key...";
+
+        string zipPath = Path.Combine(
+            Application.persistentDataPath,
+            "painting.zip"
+        );
+
+        using (UnityWebRequest request = UnityWebRequest.Get(openAIUrl))
+        {
+            request.downloadHandler = new DownloadHandlerFile(openAIKey);
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError(request.error);
+                yield break;
+            }
+        }
+
+        SendAudio();
+
+        description.text = "New work generated! See in \"Choose a work\"";
+        spinner.SetActive(false);
+        isWaiting = false;
+    }
+
+    private void SendAudio()
+    {
+        if (trimmedClip == null)
+            return;
+
+        if (!wasSend) 
+        {
+            // converte para bytes WAV
+            byte[] wavData = ConvertToWav(trimmedClip);
+
+            StartCoroutine(SendAudioToOpenAI(wavData));
+
+            /*var req = new CreateAudioTranscriptionsRequest
+            {
+                FileData = new FileData() { Data = wavData, Name = "audio.wav" },
+                // File = Application.persistentDataPath + "/" + fileName,
+                Model = "whisper-1",
+                Language = "en"
+            };
+            var res = await openai.CreateAudioTranscription(req);
+
+            // converte para Base64
+            // string base64Audio = Convert.ToBase64String(wavData);
+
+            PaintRequest payload = new PaintRequest {transcription = res.Text == null ? "Generate for me Monalisa of Da Vinci" : res.Text};
+
+            // 4) Serializa para JSON
+            string json = JsonUtility.ToJson(payload);
+
+            string url = $"{baseUrl}/paint";
+            // envia para API
+            StartCoroutine(SendToAPI(json, url));
+            wasSend = true;*/
+        }
+    }
+
+    IEnumerator SendAudioToOpenAI(byte[] wavData)
+    {
+        string urlOpenAI = "https://api.openai.com/v1/audio/transcriptions";
+
+        WWWForm form = new WWWForm();
+        form.AddBinaryData("file", wavData, "audio.wav", "audio/wav");
+        form.AddField("model", "whisper-1");
+        form.AddField("language", "en");
+
+        using (UnityWebRequest request = UnityWebRequest.Post(urlOpenAI, form))
+        {
+            request.SetRequestHeader(
+                "Authorization",
+                "Bearer " + openAIKey
+            );
+
+            // IMPORTANTE: não setar Content-Type manualmente
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("OpenAI error: " + request.error);
+                Debug.LogError(request.downloadHandler.text);
+                yield break;
+            }
+
+            string json = request.downloadHandler.text;
+            Debug.Log("OpenAI response: " + json);
+
+            // parse simples
+            WhisperResponse response = JsonUtility.FromJson<WhisperResponse>(json);
+
+            Debug.Log("Texto transcrito: " + response.text);
+
+            // segue seu fluxo normal
+            PaintRequest payload = new PaintRequest
+            {
+                transcription = response.text == null ? "Generate for me Monalisa of Da Vinci" : response.text
+            };
+
+            string url = $"{baseUrl}/paint";
+            string payloadJson = JsonUtility.ToJson(payload);
+            StartCoroutine(
+                SendToAPI(payloadJson, url)
+            );
+            wasSend = true;
+        }
+    }
+
      IEnumerator SendToAPI(string json, string apiUrl)
     {
         isWaiting = true;
@@ -331,26 +347,57 @@ public class RecordingController : MonoBehaviour
             {
                 PaintingJobResponse response = JsonUtility.FromJson<PaintingJobResponse>(request.downloadHandler.text);
 
-                // 🔥 agora baixa o ZIP via streaming
-                string zipUrl = $"{baseUrl}/jobs/{response.jobId}/download";
+                string verifUrl = $"{baseUrl}/jobs/{response.jobId}";
 
-                yield return new WaitForSeconds(30f);
-
-                StartCoroutine(DownloadZip(zipUrl, response.txtInfos));
+                StartCoroutine(VerifPayload(verifUrl, response.jobId, response.txtInfos));
             }
             else
                 Debug.LogError("Erro API: " + request.error);
         }
     }
 
-    public void Sleep()
+    IEnumerator VerifPayload(string verifUrl, string jobID, string txtInfos)
     {
-        description.text = "Waiting API response...";
+        description.text = "Checking generation finalization...";
+
+        using (UnityWebRequest request = UnityWebRequest.Get(verifUrl))
+        {
+            request.downloadHandler = new DownloadHandlerBuffer();
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                JobStatus response = JsonUtility.FromJson<JobStatus>(request.downloadHandler.text);
+
+                // enquanto estive gerando ou estiver na fila para gerar, vai verificando o statusd
+                while(response.status == "running" || response.status == "queued")
+                {
+                    yield return new WaitForSeconds(2f);
+                    StartCoroutine(VerifPayload(verifUrl, jobID, txtInfos));
+                }
+
+                if (response.status == "error")
+                {
+                    Debug.LogError("Erro API: " + request.error);
+                    yield break;
+                }else if (response.status == "done")
+                {
+                    string zipUrl = $"{baseUrl}/jobs/{jobID}/download";
+
+                    StartCoroutine(DownloadZip(zipUrl, txtInfos));
+                }
+            }
+            else
+            {
+                Debug.LogError("Erro API: " + request.error);
+                yield break;
+            }
+        }
     }
 
     IEnumerator DownloadZip(string zipUrl, string txtInfos)
     {
-        description.text = "Downloading assets...";
+        description.text = "Downloading new Work...";
 
         string zipPath = Path.Combine(
             Application.persistentDataPath,
@@ -398,13 +445,33 @@ public class RecordingController : MonoBehaviour
         public string txtInfos;
     }
 
+    [Serializable]
+    public class WhisperResponse
+    {
+        public string text;
+    }
+
+    [Serializable]
+    public class JobStatus {
+        public string job_id;
+        public string status;
+        public string message; 
+        public string created_at;
+        public string updated_at;
+    }
+
+    private void ResetSend()
+    {
+        wasSend = false;
+        trimmedClip = null;
+    }
+
     private void NewAudio()
     {
         if (!isWaiting)
         {
             description.text = "Press Y to start recording...";
             wasSend = false;
-            wasVisualize = false;
             canRecording = true;
         }
     }
