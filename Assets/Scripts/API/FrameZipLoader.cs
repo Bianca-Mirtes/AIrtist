@@ -37,7 +37,6 @@ public class FrameZipLoader : MonoBehaviour
 
         string zipPath = Path.Combine(workDir, "frames.zip");
         File.WriteAllBytes(zipPath, zipBytes);
-        yield return null;
 
         archive = ZipFile.OpenRead(zipPath);
 
