@@ -167,10 +167,10 @@ public class RecordingController : MonoBehaviour
         transform.GetChild(0).gameObject.SetActive(true);
     }
 
-    private void SendAudio()
+    private async void SendAudio()
     {
-        if (trimmedClip == null)
-            return;
+        // if (trimmedClip == null)
+            //return;
 
         if (!wasSend) 
         {
@@ -179,7 +179,7 @@ public class RecordingController : MonoBehaviour
 
             SendAudioToOpenAI(wavData);
 
-            /*var req = new CreateAudioTranscriptionsRequest
+            var req = new CreateAudioTranscriptionsRequest
             {
                 FileData = new FileData() { Data = wavData, Name = "audio.wav" },
                 // File = Application.persistentDataPath + "/" + fileName,
@@ -198,8 +198,7 @@ public class RecordingController : MonoBehaviour
 
             string url = $"{baseUrl}/paint";
             // envia para API
-            StartCoroutine(SendToAPI(json, url));*/
-
+            StartCoroutine(SendToAPI(json, url));
             wasSend = true;
         }
     }
@@ -250,6 +249,7 @@ public class RecordingController : MonoBehaviour
             StartCoroutine(
                 SendToAPI(payloadJson, url)
             );
+            wasSend = true;
         }
     }
 
