@@ -167,7 +167,7 @@ public class RecordingController : MonoBehaviour
         transform.GetChild(0).gameObject.SetActive(true);
     }
 
-    private async void SendAudio()
+    private void SendAudio()
     {
         if (trimmedClip == null)
             return;
@@ -177,7 +177,9 @@ public class RecordingController : MonoBehaviour
             // converte para bytes WAV
             byte[] wavData = ConvertToWav(trimmedClip);
 
-            var req = new CreateAudioTranscriptionsRequest
+            SendAudioToOpenAI(wavData);
+
+            /*var req = new CreateAudioTranscriptionsRequest
             {
                 FileData = new FileData() { Data = wavData, Name = "audio.wav" },
                 // File = Application.persistentDataPath + "/" + fileName,
@@ -196,11 +198,67 @@ public class RecordingController : MonoBehaviour
 
             string url = $"{baseUrl}/paint";
             // envia para API
-            StartCoroutine(SendToAPI(json, url));
+            StartCoroutine(SendToAPI(json, url));*/
 
             wasSend = true;
         }
     }
+
+    IEnumerator SendAudioToOpenAI(byte[] wavData)
+    {
+        string urlOpenAI = "https://api.openai.com/v1/audio/transcriptions";
+
+        WWWForm form = new WWWForm();
+        form.AddBinaryData("file", wavData, "audio.wav", "audio/wav");
+        form.AddField("model", "whisper-1");
+        form.AddField("language", "en");
+
+        using (UnityWebRequest request = UnityWebRequest.Post(urlOpenAI, form))
+        {
+            request.SetRequestHeader(
+                "Authorization",
+                "Bearer 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"
+            );
+
+            // IMPORTANTE: não setar Content-Type manualmente
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("OpenAI error: " + request.error);
+                Debug.LogError(request.downloadHandler.text);
+                yield break;
+            }
+
+            string json = request.downloadHandler.text;
+            Debug.Log("OpenAI response: " + json);
+
+            // parse simples
+            WhisperResponse response =
+                JsonUtility.FromJson<WhisperResponse>(json);
+
+            Debug.Log("Texto transcrito: " + response.text);
+
+            // segue seu fluxo normal
+            PaintRequest payload = new PaintRequest
+            {
+                transcription = response.text
+            };
+
+            string url = $"{baseUrl}/paint";
+            string payloadJson = JsonUtility.ToJson(payload);
+            StartCoroutine(
+                SendToAPI(payloadJson, url)
+            );
+        }
+    }
+
+    [Serializable]
+    public class WhisperResponse
+    {
+        public string text;
+    }
+
 
     private void ResetSend()
     {
