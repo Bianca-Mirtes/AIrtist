@@ -19,16 +19,17 @@ public class FrameZipLoader : MonoBehaviour
 
     // ================= ENTRY =================
 
-    public void LoadFromZipBytes(byte[] zipBytes, string txt)
+    public void LoadFromZipPath(string zipPath, string txt)
     {
-        StartCoroutine(LoadRoutine(zipBytes, txt));
+        StartCoroutine(LoadRoutine(zipPath, txt));
     }
 
     // ================= LOADER =================
 
-    IEnumerator LoadRoutine(byte[] zipBytes, string txt)
+    IEnumerator LoadRoutine(string zipPath, string txt)
     {
         Debug.Log("📦 Iniciando extração do ZIP...");
+
         workDir = Path.Combine(Application.persistentDataPath, "painting_zip_tmp");
 
         if (Directory.Exists(workDir))
@@ -36,9 +37,7 @@ public class FrameZipLoader : MonoBehaviour
 
         Directory.CreateDirectory(workDir);
 
-        string zipPath = Path.Combine(workDir, "frames.zip");
-        File.WriteAllBytes(zipPath, zipBytes);
-
+        // 📌 agora apenas ABRE o zip existente
         archive = ZipFile.OpenRead(zipPath);
 
         List<ZipArchiveEntry> paintingEntries = new();

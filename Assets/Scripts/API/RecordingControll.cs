@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
@@ -169,8 +170,8 @@ public class RecordingController : MonoBehaviour
 
     private async void SendAudio()
     {
-        // if (trimmedClip == null)
-            //return;
+        if (trimmedClip == null)
+            return;
 
         if (!wasSend) 
         {
@@ -305,7 +306,7 @@ public class RecordingController : MonoBehaviour
         return stream.ToArray();
     }
 
-    IEnumerator SendToAPI(string json, string apiUrl)
+    public IEnumerator SendToAPI(string json, string apiUrl)
     {
         isWaiting = true;
         description.text = "Waiting API response...";
@@ -328,17 +329,60 @@ public class RecordingController : MonoBehaviour
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                PaintingResponse response = JsonUtility.FromJson<PaintingResponse>(request.downloadHandler.text);
-                byte[] zipBytes = Convert.FromBase64String(response.zip);
-                FindFirstObjectByType<FrameZipLoader>().LoadFromZipBytes(zipBytes, response.txtInfos);
-                description.text = "New work generated! See in \"Choose a work\"";
-                spinner.SetActive(false);
-                isWaiting = false;
+                PaintingJobResponse response = JsonUtility.FromJson<PaintingJobResponse>(request.downloadHandler.text);
+
+                // 🔥 agora baixa o ZIP via streaming
+                string zipUrl = $"{baseUrl}/jobs/{response.jobId}/download";
+
+                yield return new WaitForSeconds(30f);
+
+                StartCoroutine(DownloadZip(zipUrl, response.txtInfos));
             }
             else
                 Debug.LogError("Erro API: " + request.error);
         }
     }
+
+    public void Sleep()
+    {
+        description.text = "Waiting API response...";
+    }
+
+    IEnumerator DownloadZip(string zipUrl, string txtInfos)
+    {
+        description.text = "Downloading assets...";
+
+        string zipPath = Path.Combine(
+            Application.persistentDataPath,
+            "painting.zip"
+        );
+
+        using (UnityWebRequest request = UnityWebRequest.Get(zipUrl))
+        {
+            request.downloadHandler = new DownloadHandlerFile(zipPath);
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError(request.error);
+                yield break;
+            }
+        }
+
+        FindFirstObjectByType<FrameZipLoader>().LoadFromZipPath(zipPath, txtInfos);
+
+        description.text = "New work generated! See in \"Choose a work\"";
+        spinner.SetActive(false);
+        isWaiting = false;
+    }
+
+    [Serializable]
+    public class PaintingJobResponse
+    {
+        public string jobId;
+        public string txtInfos;
+    }
+
 
     [Serializable]
     public class PaintRequest
