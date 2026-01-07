@@ -189,7 +189,7 @@ public class RecordingController : MonoBehaviour
             // converte para Base64
             // string base64Audio = Convert.ToBase64String(wavData);
 
-            Request payload = new Request { transcription = res.Text};
+            PaintRequest payload = new PaintRequest {transcription = res.Text};
 
             // 4) Serializa para JSON
             string json = JsonUtility.ToJson(payload);
@@ -259,7 +259,6 @@ public class RecordingController : MonoBehaviour
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.timeout = 300;
 
             Debug.Log(">>> Sending request");
             yield return request.SendWebRequest();
@@ -274,7 +273,7 @@ public class RecordingController : MonoBehaviour
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                Response response = JsonUtility.FromJson<Response>(request.downloadHandler.text);
+                PaintingResponse response = JsonUtility.FromJson<PaintingResponse>(request.downloadHandler.text);
                 byte[] zipBytes = Convert.FromBase64String(response.zip);
                 FindFirstObjectByType<FrameZipLoader>().LoadFromZipBytes(zipBytes, response.txtInfos);
                 description.text = "New work generated! See in \"Choose a work\"";
@@ -287,14 +286,14 @@ public class RecordingController : MonoBehaviour
     }
 
     [Serializable]
-    public class Request
+    public class PaintRequest
     {
         public string transcription;
     }
 
 
     [Serializable]
-    public class Response
+    public class PaintingResponse
     {
         public string zip;
         public string txtInfos;
