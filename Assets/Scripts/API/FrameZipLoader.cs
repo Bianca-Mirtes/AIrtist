@@ -28,6 +28,7 @@ public class FrameZipLoader : MonoBehaviour
 
     IEnumerator LoadRoutine(byte[] zipBytes, string txt)
     {
+        Debug.Log("📦 Iniciando extração do ZIP...");
         workDir = Path.Combine(Application.persistentDataPath, "painting_zip_tmp");
 
         if (Directory.Exists(workDir))
@@ -53,6 +54,8 @@ public class FrameZipLoader : MonoBehaviour
                 maskEntries.Add(entry);
         }
 
+        Debug.Log($"✅ Extração concluída! Encontradas {paintingEntries.Count} pinturas e {maskEntries.Count} máscaras.");
+
         paintingEntries.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
         maskEntries.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
 
@@ -68,6 +71,8 @@ public class FrameZipLoader : MonoBehaviour
 
         Texture2D image = LoadFrame(paintingEntries[paintingEntries.Count-1]);
 
+        Debug.Log("🖼 Criando sprite da obra...");
+
         workImage = Sprite.Create(
             image,
             new Rect(0, 0, image.width, image.height),
@@ -76,6 +81,8 @@ public class FrameZipLoader : MonoBehaviour
         );
 
         Infos infos = TXTLoader.Instance.LoadTXT(txt);
+
+        Debug.Log("🎨 Criando nova obra no ChooseArtController...");
 
         ChooseArtController.Instance.CreateNewArt(
             paintingEntries,

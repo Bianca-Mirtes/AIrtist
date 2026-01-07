@@ -326,9 +326,6 @@ public class RecordingController : MonoBehaviour
             Debug.Log($"code = {request.responseCode}");
             Debug.Log($"error = {request.error}");
 
-            if (request.downloadHandler != null)
-                Debug.Log($"body = {request.downloadHandler.text}");
-
             if (request.result == UnityWebRequest.Result.Success)
             {
                 PaintingResponse response = JsonUtility.FromJson<PaintingResponse>(request.downloadHandler.text);
