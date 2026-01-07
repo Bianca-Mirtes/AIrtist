@@ -306,7 +306,7 @@ public class RecordingController : MonoBehaviour
         return stream.ToArray();
     }
 
-    public IEnumerator SendToAPI(string json, string apiUrl)
+     IEnumerator SendToAPI(string json, string apiUrl)
     {
         isWaiting = true;
         description.text = "Waiting API response...";
