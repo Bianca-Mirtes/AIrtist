@@ -189,7 +189,8 @@ public class RecordingController : MonoBehaviour
             // converte para Base64
             // string base64Audio = Convert.ToBase64String(wavData);
 
-            PaintRequest payload = new PaintRequest {transcription = res.Text};
+            PaintRequest payload = new PaintRequest();
+            payload.transcription = res.Text;
 
             // 4) Serializa para JSON
             string json = JsonUtility.ToJson(payload);
