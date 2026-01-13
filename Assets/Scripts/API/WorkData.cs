@@ -5,7 +5,7 @@ using UnityEngine;
 namespace WorkData
 {
     [System.Serializable]
-    public struct Infos
+    public class Infos
     {
         public int resWidth { get; set; }
         public int resHeight { get; set; }

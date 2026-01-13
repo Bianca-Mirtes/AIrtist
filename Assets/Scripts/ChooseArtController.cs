@@ -6,7 +6,6 @@ using Unity.Burst.Intrinsics;
 using UnityEngine;
 using UnityEngine.UI;
 using WorkData;
-using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
 public class ChooseArtController : MonoBehaviour
 {
@@ -141,7 +140,7 @@ public class ChooseArtController : MonoBehaviour
         work.image = workImage;
         artsWithApi.Add(work);
         
-        string description = work.workName + "\n" + work.author + ", " + work.age;
+        string description = workName + "\n" + authorName + ", " + workAge;
         btn.GetComponent<Image>().sprite = work.image;
         btn.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = description;
         btn.GetComponent<Button>().onClick.AddListener(() => Choose(work));

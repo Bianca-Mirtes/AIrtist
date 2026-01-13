@@ -70,6 +70,11 @@ public class ScratchLayerManager : MonoBehaviour
 
         diffAmount = ComputeDiff();
 
+        activeMask.width = maskCurrent.width;
+        activeMask.height = maskCurrent.height;
+
+        brush.canPaint = true;
+
         ApplyToMaterial();
         brush.currentDiffMask = maskCurrent;
     }

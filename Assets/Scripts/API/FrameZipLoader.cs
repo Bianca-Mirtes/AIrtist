@@ -37,7 +37,6 @@ public class FrameZipLoader : MonoBehaviour
 
         Directory.CreateDirectory(workDir);
 
-        // 📌 agora apenas ABRE o zip existente
         archive = ZipFile.OpenRead(zipPath);
 
         List<ZipArchiveEntry> paintingEntries = new();
@@ -45,12 +44,15 @@ public class FrameZipLoader : MonoBehaviour
 
         foreach (var entry in archive.Entries)
         {
-            string path = entry.FullName.Replace("\\", "/");
+            string path = entry.FullName.Replace("\\", "/").ToLower();
 
-            if (path.Contains("/painting/") && !path.EndsWith("/"))
-                paintingEntries.Add(entry);
-            else if (path.Contains("/mask/") && !path.EndsWith("/"))
-                maskEntries.Add(entry);
+            if (!path.EndsWith("/"))
+            {
+                if (path.Contains("painting"))
+                    paintingEntries.Add(entry);
+                else if (path.Contains("mask"))
+                    maskEntries.Add(entry);
+            }
         }
 
         Debug.Log($"✅ Extração concluída! Encontradas {paintingEntries.Count} pinturas e {maskEntries.Count} máscaras.");
@@ -80,6 +82,8 @@ public class FrameZipLoader : MonoBehaviour
         );
 
         Infos infos = TXTLoader.Instance.LoadTXT(txt);
+
+        Debug.Log($"📝 Infos carregadas: Autor='{infos.authorName}', Título='{infos.workName}', Ano='{infos.workAge}'");
 
         Debug.Log("🎨 Criando nova obra no ChooseArtController...");
 
@@ -113,7 +117,7 @@ public class FrameZipLoader : MonoBehaviour
 
         Texture2D tex = new Texture2D(2, 2, format, false);
         tex.LoadImage(bytes, false);
-        tex.Apply(false, true);
+        tex.Apply(false, false);
 
         return tex;
     }

@@ -14,11 +14,11 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Rendering;
+using UnityEngine.Scripting;
 using UnityEngine.UI;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
-using static UnityEngine.Audio.ProcessorInstance;
 
 public class RecordingController : MonoBehaviour
 {
@@ -63,7 +63,7 @@ public class RecordingController : MonoBehaviour
 
     void Start()
     {
-        baseUrl = "https://07bab556234b.ngrok-free.app";
+        baseUrl = "https://app.akcitgaming.top";
         // Se ainda não tem a permissão, pede
         if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
         {
@@ -77,7 +77,7 @@ public class RecordingController : MonoBehaviour
             Debug.LogError("Nenhum microfone encontrado!");
 
         returnBtn.onClick.AddListener(ReturnStep);
-        sendAudioBtn.onClick.AddListener(() => GetAPIKey($"{baseUrl}/apiKey"));
+        sendAudioBtn.onClick.AddListener(() => StartCoroutine(GetAPIKey($"{baseUrl}/apiKey")));
         newAudioBtn.onClick.AddListener(NewAudio);
     }
 
@@ -212,15 +212,10 @@ public class RecordingController : MonoBehaviour
     IEnumerator GetAPIKey(string openAIUrl)
     {
         description.text = "Getting the OpenAI Key...";
-
-        string zipPath = Path.Combine(
-            Application.persistentDataPath,
-            "painting.zip"
-        );
+        spinner.SetActive(true);
 
         using (UnityWebRequest request = UnityWebRequest.Get(openAIUrl))
         {
-            request.downloadHandler = new DownloadHandlerFile(openAIKey);
             yield return request.SendWebRequest();
 
             if (request.result != UnityWebRequest.Result.Success)
@@ -228,13 +223,13 @@ public class RecordingController : MonoBehaviour
                 Debug.LogError(request.error);
                 yield break;
             }
+
+            openAIKey = request.downloadHandler.text.Trim();
         }
 
-        SendAudio();
+        Debug.Log("OpenAI Key obtained successfully!: " + openAIKey);
 
-        description.text = "New work generated! See in \"Choose a work\"";
-        spinner.SetActive(false);
-        isWaiting = false;
+        SendAudio();
     }
 
     private void SendAudio()
@@ -347,9 +342,9 @@ public class RecordingController : MonoBehaviour
             {
                 PaintingJobResponse response = JsonUtility.FromJson<PaintingJobResponse>(request.downloadHandler.text);
 
-                string verifUrl = $"{baseUrl}/jobs/{response.jobId}";
+                string verifUrl = $"{baseUrl}/jobs/{response.job_id}";
 
-                StartCoroutine(VerifPayload(verifUrl, response.jobId, response.txtInfos));
+                StartCoroutine(VerifPayload(verifUrl, response.job_id, response.txtInfos));
             }
             else
                 Debug.LogError("Erro API: " + request.error);
@@ -360,73 +355,82 @@ public class RecordingController : MonoBehaviour
     {
         description.text = "Checking generation finalization...";
 
-        using (UnityWebRequest request = UnityWebRequest.Get(verifUrl))
+        while (true)
         {
-            request.downloadHandler = new DownloadHandlerBuffer();
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success)
+            using (UnityWebRequest request = UnityWebRequest.Get(verifUrl))
             {
-                JobStatus response = JsonUtility.FromJson<JobStatus>(request.downloadHandler.text);
+                request.SetRequestHeader("User-Agent", "UnityPlayer");
+                request.downloadHandler = new DownloadHandlerBuffer();
+                yield return request.SendWebRequest();
 
-                // enquanto estive gerando ou estiver na fila para gerar, vai verificando o statusd
-                while(response.status == "running" || response.status == "queued")
+                if (request.result != UnityWebRequest.Result.Success)
                 {
-                    yield return new WaitForSeconds(2f);
-                    StartCoroutine(VerifPayload(verifUrl, jobID, txtInfos));
+                    Debug.LogError("Erro API: " + request.error);
+                    yield break;
+                }
+
+                JobStatus response =
+                    JsonUtility.FromJson<JobStatus>(request.downloadHandler.text);
+
+                if (response.status == "queued" || response.status == "running")
+                {
+                    yield return new WaitForSeconds(1f);
+                    continue;
                 }
 
                 if (response.status == "error")
                 {
-                    Debug.LogError("Erro API: " + request.error);
+                    Debug.LogError("Erro API: Job error");
                     yield break;
-                }else if (response.status == "done")
+                }
+
+                if (response.status == "done")
                 {
                     string zipUrl = $"{baseUrl}/jobs/{jobID}/download";
-
-                    StartCoroutine(DownloadZip(zipUrl, txtInfos));
+                    StartCoroutine(DownloadZip(zipUrl, txtInfos, jobID));
+                    yield break;
                 }
-            }
-            else
-            {
-                Debug.LogError("Erro API: " + request.error);
-                yield break;
             }
         }
     }
 
-    IEnumerator DownloadZip(string zipUrl, string txtInfos)
+    IEnumerator DownloadZip(string zipUrl, string txtInfos, string jobID)
     {
         description.text = "Downloading new Work...";
 
         string zipPath = Path.Combine(
             Application.persistentDataPath,
-            "painting.zip"
+            $"{jobID}.zip"
         );
 
         using (UnityWebRequest request = UnityWebRequest.Get(zipUrl))
         {
-            request.downloadHandler = new DownloadHandlerFile(zipPath);
+            request.SetRequestHeader("User-Agent", "UnityPlayer");
+            request.downloadHandler = new DownloadHandlerFile(zipPath); 
             yield return request.SendWebRequest();
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError(request.error);
+                Debug.LogError($"Download error: {request.error}");
+                Debug.LogError($"HTTP Code: {request.responseCode}");
                 yield break;
             }
+
+            long size = new FileInfo(zipPath).Length;
+            Debug.Log("ZIP DOWNLOADED SIZE: " + size);
+
+            FindFirstObjectByType<FrameZipLoader>().LoadFromZipPath(zipPath, txtInfos);
+
+            description.text = "New work generated! See in \"Choose a work\"";
+            spinner.SetActive(false);
+            isWaiting = false;
         }
-
-        FindFirstObjectByType<FrameZipLoader>().LoadFromZipPath(zipPath, txtInfos);
-
-        description.text = "New work generated! See in \"Choose a work\"";
-        spinner.SetActive(false);
-        isWaiting = false;
     }
 
     [Serializable]
     public class PaintingJobResponse
     {
-        public string jobId;
+        public string job_id;
         public string txtInfos;
     }
 
@@ -446,18 +450,16 @@ public class RecordingController : MonoBehaviour
     }
 
     [Serializable]
+    public class JobStatus
+    {
+        public string status;
+    }
+
+
+    [Serializable]
     public class WhisperResponse
     {
         public string text;
-    }
-
-    [Serializable]
-    public class JobStatus {
-        public string job_id;
-        public string status;
-        public string message; 
-        public string created_at;
-        public string updated_at;
     }
 
     private void ResetSend()

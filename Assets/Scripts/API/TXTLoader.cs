@@ -5,7 +5,6 @@ using WorkData;
 
 public class TXTLoader : MonoBehaviour
 {
-    private Infos infos;
     public static TXTLoader _instance;
 
     public static TXTLoader Instance
@@ -33,8 +32,10 @@ public class TXTLoader : MonoBehaviour
         if( txt == null || txt.Length == 0)
         {
             Debug.LogError("TXTLoader: txt is null or empty");
-            return infos;
+            return new Infos();
         }
+
+        Infos infos = new Infos();
 
         using (StringReader reader = new StringReader(txt))
         {
@@ -60,18 +61,16 @@ public class TXTLoader : MonoBehaviour
                     string[] res = line.Split('x');
                     if(res.Length == 2)
                     {
-                        if(int.TryParse(res[0], out int width))
-                        {
-                            infos.resWidth = width;
-                        }
-                        if(int.TryParse(res[1], out int height))
-                        {
-                            infos.resHeight = height;
-                        }
+                        int.TryParse(res[0], out int width);
+                        infos.resWidth = width;
+
+                        int.TryParse(res[1], out int height);
+                        infos.resHeight = height;
                     }
                 }
+                count++;
             }
-            return infos;
         }
+        return infos;
     }
 }
