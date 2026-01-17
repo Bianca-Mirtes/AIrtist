@@ -12,7 +12,6 @@ public class Work : ScriptableObject
     public string workName;
     public string author;
     public string age;
-    public TextAsset txtInfos;
     public int resWidth;
     public int resHeight;
 

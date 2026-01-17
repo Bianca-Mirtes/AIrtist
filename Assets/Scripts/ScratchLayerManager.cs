@@ -19,10 +19,10 @@ public class ScratchLayerManager : MonoBehaviour
 
     MaterialPropertyBlock mpb;
 
-    private int totalFrames = 400;
-    int globalFrame;
+    private int totalFrames;
+    int globalFrame = 125;
     public bool isLocal = true;
-    public float diffAmount;
+    //public float diffAmount;
 
     Texture2D paintingCurrent;
     Texture2D paintingNext;
@@ -60,15 +60,29 @@ public class ScratchLayerManager : MonoBehaviour
         mpb.SetFloat("_HasFrames", 1);
     }
 
-    public void SetInitialFrames(Texture2D currentPainting, Texture2D nextPainting, Texture2D currentMask, Texture2D nextMask)
+    private void Start()
     {
+        UI?.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Button>().onClick.AddListener(ResetPaint);
+    }
+
+    private void ResetPaint()
+    {
+        UI.SetActive(false);
+        ChooseArtController.Instance.gameObject.transform.GetChild(0).gameObject.SetActive(true);
+        ClearMask();
+        mpb.Clear();
+    }
+
+    public void SetInitialFrames(Texture2D currentPainting, Texture2D nextPainting, Texture2D currentMask, Texture2D nextMask, int total)
+    {
+        totalFrames = total;
         paintingCurrent = currentPainting;
         paintingNext = nextPainting;
 
         maskCurrent = currentMask;
         maskNext = nextMask;
 
-        diffAmount = ComputeDiff();
+        //diffAmount = ComputeDiff();
 
         activeMask.width = maskCurrent.width;
         activeMask.height = maskCurrent.height;
@@ -76,7 +90,7 @@ public class ScratchLayerManager : MonoBehaviour
         brush.canPaint = true;
 
         ApplyToMaterial();
-        brush.currentDiffMask = maskCurrent;
+        brush.analyzer.ConvertToR8(maskCurrent);
     }
 
     public void SetTotalFrames(int value)
@@ -90,34 +104,45 @@ public class ScratchLayerManager : MonoBehaviour
     {
         if (globalFrame == totalFrames - 1)
         {
+            mpb.SetFloat("_IsTheLastFrame", 1);
+            paintingCurrent = paintingNext;
+            maskCurrent = maskNext;
+
+            ApplyToMaterial();
+
             confetti?.Play();
             UI?.SetActive(true);
+            brush.canPaint = false;
             ChooseArtController.Instance.ResetBrush();
             return;
         }
 
         globalFrame++;
+
+        Destroy(paintingCurrent);
+        Destroy(maskCurrent);
+
         // swap
         paintingCurrent = paintingNext;
         maskCurrent = maskNext;
 
         if (!isLocal) {
-            WorkAPI api = (WorkAPI)ChooseArtController.Instance.GetCurrentWork();
+            WorkAPI api = ChooseArtController.Instance.GetCurrentWorkAPI();
             (Texture2D, Texture2D) newNextTex = FindFirstObjectByType<FrameZipLoader>().LoadNextFrame(api.painting, api.masks, globalFrame);
             paintingNext = newNextTex.Item1;
             maskNext = newNextTex.Item2;
         }
         else
         {
-            Work work = (Work)ChooseArtController.Instance.GetCurrentWork();
+            Work work = ChooseArtController.Instance.GetCurrentWork();
             paintingNext = work.painting[globalFrame + 1];
             maskNext = work.masks[globalFrame + 1];
         }
 
-        diffAmount = ComputeDiff();
+        //diffAmount = ComputeDiff();
 
         ApplyToMaterial();
-        brush.currentDiffMask = maskCurrent;
+        brush.analyzer.ConvertToR8(maskCurrent);
 
         ClearMask();
 
@@ -136,27 +161,6 @@ public class ScratchLayerManager : MonoBehaviour
         target.SetPropertyBlock(mpb);
     }
 
-    public float ComputeDiff()
-    {
-        var pa = paintingCurrent.GetPixels32();
-        var pb = paintingNext.GetPixels32();
-
-        int diff = 0;
-
-        for (int i = 0; i < pa.Length; i++)
-        {
-            float d =
-                (Mathf.Abs(pa[i].r - pb[i].r) +
-                 Mathf.Abs(pa[i].g - pb[i].g) +
-                 Mathf.Abs(pa[i].b - pb[i].b)) / (3f * 255f);
-
-            if (d > 0.05f)
-                diff++;
-        }
-
-        return diff / (float)pa.Length;
-    }
-
     void ClearMask()
     {
         if (activeMask == null) return;
@@ -170,6 +174,7 @@ public class ScratchLayerManager : MonoBehaviour
     void OnDisable()
     {
         mpb.Clear();
+        brush.analyzer.Dispose();
         mpb.SetFloat("_HasFrames", 0);
         ClearMask();
         target.SetPropertyBlock(mpb);

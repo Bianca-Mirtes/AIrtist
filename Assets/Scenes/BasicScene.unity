@@ -2153,7 +2153,7 @@ GameObject:
   - component: {fileID: 648221701}
   - component: {fileID: 648221700}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Banco
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2610,7 +2610,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2397425259038431699, guid: fa5ef3b56cfeb4f4ba855cdf2610a578, type: 3}
       propertyPath: m_Name
-      value: Question1
+      value: Back
       objectReference: {fileID: 0}
     - target: {fileID: 2397425259038431700, guid: fa5ef3b56cfeb4f4ba855cdf2610a578, type: 3}
       propertyPath: m_Pivot.x
@@ -2746,7 +2746,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7753147258609537286, guid: fa5ef3b56cfeb4f4ba855cdf2610a578, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7753147258609537286, guid: fa5ef3b56cfeb4f4ba855cdf2610a578, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -4174,6 +4174,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: XR Origin Hands (XR Rig)
       objectReference: {fileID: 0}
+    - target: {fileID: 2218496723442559054, guid: d6878e1999eb4b44a9f5a263af86c185, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5160,7 +5164,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2371080988047123379, guid: 6ecff1383ec76e543965199259280ceb, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.785
+      value: 0.867
       objectReference: {fileID: 0}
     - target: {fileID: 2371080988047123379, guid: 6ecff1383ec76e543965199259280ceb, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5735,6 +5739,68 @@ RectTransform:
   m_AnchoredPosition: {x: 192.81, y: -264.1}
   m_SizeDelta: {x: 337.6, y: 303.6}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1606536055
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1606536058}
+  - component: {fileID: 1606536057}
+  - component: {fileID: 1606536056}
+  m_Layer: 0
+  m_Name: Banco2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1606536056
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1606536055}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1.1393976, z: 1}
+  m_Center: {x: 0, y: 0.06969737, z: 0}
+--- !u!33 &1606536057
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1606536055}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1606536058
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1606536055}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.26860023, z: -0, w: 0.96325177}
+  m_LocalPosition: {x: -0.554, y: 0.491, z: 1.281}
+  m_LocalScale: {x: 0.5604355, y: 0.48704967, z: 0.64836353}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 31.162, z: 0}
 --- !u!1001 &1659460515
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6317,11 +6383,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2706518760841202713, guid: e90b69b45db946e4aba9baf052c2b819, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.94
+      value: 0.865
       objectReference: {fileID: 0}
     - target: {fileID: 2706518760841202713, guid: e90b69b45db946e4aba9baf052c2b819, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.139
+      value: 1.148
       objectReference: {fileID: 0}
     - target: {fileID: 2706518760841202713, guid: e90b69b45db946e4aba9baf052c2b819, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6556,7 +6622,8 @@ MonoBehaviour:
   paintColor: {r: 1, g: 1, b: 1, a: 1}
   strokeInterval: 0.03
   scratchManager: {fileID: 1841777404}
-  currentDiffMask: {fileID: 0}
+  canPaint: 0
+  advancedFrame: 0
 --- !u!4 &1809812331
 Transform:
   m_ObjectHideFlags: 0
@@ -6607,7 +6674,6 @@ MonoBehaviour:
   confetti: {fileID: 2056288431}
   UI: {fileID: 2063575390}
   isLocal: 1
-  diffAmount: 0
 --- !u!4 &1841777405
 Transform:
   m_ObjectHideFlags: 0
@@ -7664,6 +7730,7 @@ SceneRoots:
   - {fileID: 1536872132}
   - {fileID: 870465739}
   - {fileID: 648221702}
+  - {fileID: 1606536058}
   - {fileID: 2056288430}
   - {fileID: 529394753}
   - {fileID: 2063575388}

@@ -3,11 +3,9 @@
 public class BrushStampAnalyzer
 {
     Texture2D readback;
+    Texture2D diffMaskR8;
 
-    public float CalculateProgress(
-        RenderTexture scratchRT,
-        Texture2D diffMask
-    )
+    public float CalculateProgress(RenderTexture scratchRT)
     {
         EnsureReadback(scratchRT.width, scratchRT.height);
 
@@ -22,13 +20,8 @@ public class BrushStampAnalyzer
 
         RenderTexture.active = prev;
 
-        Texture2D diffMks = ConvertToR8(diffMask);
-
         var scratch = readback.GetRawTextureData<byte>();
-        var diff = diffMks.GetRawTextureData<byte>();
-
-        Debug.Log("Scratch: "+ scratch.Length);
-        Debug.Log("diffMask: "+  diff.Length);
+        var diff = diffMaskR8.GetRawTextureData<byte>();
 
         int revealed = 0;
         int total = 0;
@@ -47,9 +40,12 @@ public class BrushStampAnalyzer
         return (float)revealed / total;
     }
 
-    Texture2D ConvertToR8(Texture2D src)
+    public void ConvertToR8(Texture2D src)
     {
-        Texture2D dst = new Texture2D(
+        if (diffMaskR8 != null)
+            Object.Destroy(diffMaskR8);
+
+        diffMaskR8 = new Texture2D(
             src.width,
             src.height,
             TextureFormat.R8,
@@ -66,13 +62,9 @@ public class BrushStampAnalyzer
             outData[i] = pixels[i].r;
         }
 
-        dst.LoadRawTextureData(outData);
-        dst.Apply(false, false);
-
-        return dst;
+        diffMaskR8.LoadRawTextureData(outData);
+        diffMaskR8.Apply(false, false);
     }
-
-
 
     void EnsureReadback(int w, int h)
     {
@@ -89,5 +81,11 @@ public class BrushStampAnalyzer
             TextureFormat.R8,
             false, true
         );
+    }
+
+    public void Dispose()
+    {
+        if (readback) Object.Destroy(readback);
+        if (diffMaskR8) Object.Destroy(diffMaskR8);
     }
 }

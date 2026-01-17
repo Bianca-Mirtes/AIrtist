@@ -19,11 +19,11 @@ public class VRBrushPainter : MonoBehaviour
 
     List<InputDevice> devices = new();
     Material paintMat;
-    BrushStampAnalyzer analyzer;
+    public BrushStampAnalyzer analyzer;
     float lastStrokeTime;
     public bool canPaint = false;
+    public bool advancedFrame = false;
 
-    public Texture2D currentDiffMask;
     void Start()
     {
         paintMat = new Material(Shader.Find("Hidden/BrushPainter"));
@@ -39,61 +39,29 @@ public class VRBrushPainter : MonoBehaviour
             InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
             devices[0].TryGetFeatureValue(CommonUsages.trigger, out float triggerValue);
 
-            if (scratchManager.diffAmount < 0.015f)
+            if (triggerValue > 0.2f)
             {
-                scratchManager.AdvanceFrame();
-            }
-            else
-            {
-                if (triggerValue > 0.2f)
+                Ray ray = new Ray(brushTip.position, brushTip.forward);
+
+                if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
                 {
-                    Ray ray = new Ray(brushTip.position, brushTip.forward);
-
-                    if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
-                    {
-                        TryPaint(hit.textureCoord);
-                        float progress = analyzer.CalculateProgress(
-                            scratchManager.activeMask,
-                            currentDiffMask
-                        );
-
-                        Debug.Log("Progress: " + progress);
-
-                        if (progress >= 0.98f)
-                        {
-                            scratchManager.AdvanceFrame();
-                        }
-                    }
-                }
-            }
-        }
-        /*if (Input.GetKeyDown(KeyCode.P))
-        {
-            Ray ray = new Ray(brushTip.position, brushTip.forward);
-
-            if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
-            {
-                TryPaint(hit.textureCoord);
-                if (scratchManager.diffAmount < 0.015f)
-                {
-                    scratchManager.AdvanceFrame();
-                }
-                else
-                {
-                    float progress = analyzer.CalculateProgress(
-                        scratchManager.activeMask,
-                        currentDiffMask
-                    );
+                    TryPaint(hit.textureCoord);
+                    float progress = analyzer.CalculateProgress(scratchManager.activeMask);
 
                     Debug.Log("Progress: " + progress);
 
                     if (progress >= 0.98f)
                     {
-                        scratchManager.AdvanceFrame();
+                        if (!advancedFrame)
+                        {
+                            scratchManager.AdvanceFrame();
+                            advancedFrame = true;
+                            Invoke("ResetAdvancedFrame", 1.5f);
+                        }
                     }
                 }
             }
-        }*/
+        }
 #else
         if (canPaint)
         {
@@ -101,35 +69,35 @@ public class VRBrushPainter : MonoBehaviour
             InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
             devices[0].TryGetFeatureValue(CommonUsages.trigger, out float triggerValue);
 
-            if (scratchManager.diffAmount < 0.015f)
+            if (triggerValue > 0.2f)
             {
-                scratchManager.AdvanceFrame();
-            }
-            else
-            {
-                if (triggerValue > 0.2f)
+                Ray ray = new Ray(brushTip.position, brushTip.forward);
+
+                if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
                 {
-                    Ray ray = new Ray(brushTip.position, brushTip.forward);
+                    TryPaint(hit.textureCoord);
+                    float progress = analyzer.CalculateProgress(scratchManager.activeMask);
 
-                    if (Physics.Raycast(ray, out RaycastHit hit, maxDistance))
+                    Debug.Log("Progress: " + progress);
+
+                    if (progress >= 0.98f)
                     {
-                        TryPaint(hit.textureCoord);
-                        float progress = analyzer.CalculateProgress(
-                            scratchManager.activeMask,
-                            currentDiffMask
-                        );
-
-                        Debug.Log("Progress: " + progress);
-
-                        if (progress >= 0.98f)
+                        if (!advancedFrame)
                         {
                             scratchManager.AdvanceFrame();
+                            advancedFrame = true;
+                            Invoke("ResetAdvancedFrame", 1.5f);
                         }
                     }
                 }
             }
         }
 #endif
+    }
+
+    void ResetAdvancedFrame()
+    {
+        advancedFrame = false;
     }
 
     void TryPaint(Vector2 uv)

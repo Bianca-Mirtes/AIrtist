@@ -8,11 +8,12 @@
         _Mask ("Current Diff Mask", 2D) = "black" {}
         _ScratchMask ("Scratch Mask", 2D) = "black" {}
 
-        _OverlayColor ("Overlay Color", Color) = (1,1,1,0.35)
+        _OverlayColor ("Overlay Color", Color) = (1,1,1,0.5)
         _OverlayStrength ("Overlay Strength", Range(0,1)) = 1
-        _DiffThreshold ("Diff Threshold", Range(0,0.2)) = 0.05
+        _DiffThreshold ("Diff Threshold", Range(0,0.2)) = 0.03
 
         _HasFrames ("Has Frames", Float) = 0
+        _IsTheLastFrame ("The Last Frame", Float) = 0
     }
 
     SubShader
@@ -40,6 +41,7 @@
             float _DiffThreshold;
 
             float _HasFrames;
+            float _IsTheLastFrame;
 
             struct appdata
             {
@@ -84,26 +86,32 @@
                 // 🔹 Revelação do próximo frame
                 fixed4 revealed = lerp(colCurr, colNext, reveal);
 
-                // 🔹 Diferença real entre frames (robusta)
-                float diff =
-                    abs(colNext.r - colCurr.r) +
-                    abs(colNext.g - colCurr.g) +
-                    abs(colNext.b - colCurr.b);
+                if(_IsTheLastFrame == 1){
+                    return colNext;
+                }
 
-                diff /= 3.0;
+                // Pulso animado
+                float pulse = 0.5 + 0.5 * sin(_Time.y * 2.0);
 
-                float diffThresholded = step(_DiffThreshold, diff);
+                // Área ativa
+                float overlayMask = diffMask * (1.0 - reveal);
 
-                // 🔹 Overlay apenas onde ainda NÃO foi revelado
+                // Intensidade final
                 float overlayFactor =
-                    diffThresholded *
-                    (1.0 - reveal) *
-                    _OverlayStrength;
+                    overlayMask *
+                    _OverlayStrength *
+                    pulse;
 
-                fixed4 overlay = _OverlayColor;
-                overlay.a *= overlayFactor;
+                // Glow fake
+                fixed3 glow = _OverlayColor.rgb * overlayFactor * 1.5;
 
-                return lerp(revealed, overlay, overlay.a);
+                // Alpha mais sutil
+                fixed alpha = overlayFactor * 0.6;
+
+                // Composição
+                fixed4 overlay = fixed4(glow, alpha);
+
+                return revealed + overlay;
             }
             ENDCG
         }

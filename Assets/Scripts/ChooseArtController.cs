@@ -18,7 +18,8 @@ public class ChooseArtController : MonoBehaviour
 
     public GameObject buttonPrefab;
     public Transform content;
-    private object currentWork;
+    private Work currentWork;
+    private WorkAPI currentWorkAPI;
 
     private bool clicked = false;
     public static ChooseArtController _instance;
@@ -68,33 +69,37 @@ public class ChooseArtController : MonoBehaviour
             ScratchLayerManager.Instance.isLocal = true;
             ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
 
-            artMat.SetTexture("_MainTex", work.painting[0]);
-            artMat.SetTexture("_NextTex", work.painting[1]);
-            artMat.SetTexture("_Mask", work.masks[0]);
-
-            FindFirstObjectByType<ScratchLayerManager>().SetInitialFrames(work.painting[0], work.painting[1], work.masks[0], work.masks[1]);
+            artMat.SetTexture("_MainTex", work.painting[124]);
+            artMat.SetTexture("_NextTex", work.painting[125]);
+            artMat.SetTexture("_Mask", work.masks[124]);
 
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
-            FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
+            //FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
 
             transform.GetChild(1).gameObject.SetActive(false);
-            transform.GetChild(3).gameObject.SetActive(true);
+            StartPractise();
+            //transform.GetChild(3).gameObject.SetActive(true);
 
             clicked = true;
             Invoke("ResetClick", 2f);
         }
     }
 
-    public object GetCurrentWork()
+    public Work GetCurrentWork()
     {
         return currentWork;
+    }
+
+    public WorkAPI GetCurrentWorkAPI()
+    {
+        return currentWorkAPI;
     }
 
     public void Choose(WorkAPI work)
     {
         if (!clicked)
         {
-            currentWork = work;
+            currentWorkAPI = work;
             brush.SetActive(true);
             ScratchLayerManager.Instance.isLocal = false;
             ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
@@ -105,7 +110,7 @@ public class ChooseArtController : MonoBehaviour
             Texture2D firstMask = FindFirstObjectByType<FrameZipLoader>().LoadFrame(work.masks[0]);
             Texture2D secondMask = FindFirstObjectByType<FrameZipLoader>().LoadFrame(work.masks[1]);
 
-            FindFirstObjectByType<ScratchLayerManager>().SetInitialFrames(firstTex, secondTex, firstMask, secondMask);
+            FindFirstObjectByType<ScratchLayerManager>().SetInitialFrames(firstTex, secondTex, firstMask, secondMask, work.painting.Count);
 
             transform.GetChild(1).gameObject.SetActive(false);
             StartPractise();
@@ -150,6 +155,7 @@ public class ChooseArtController : MonoBehaviour
     {
         questions.GetChild(0).gameObject.SetActive(true);
         transform.GetChild(3).gameObject.SetActive(false);
+        FindFirstObjectByType<ScratchLayerManager>().SetInitialFrames(currentWork.painting[124], currentWork.painting[125], currentWork.masks[124], currentWork.masks[125], currentWork.painting.Count);
         brush.SetActive(true);
         tutorial.SetActive(true);
     }
