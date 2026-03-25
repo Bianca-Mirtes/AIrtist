@@ -64,7 +64,6 @@ public class RecordingController : MonoBehaviour
     void Start()
     {
         baseUrl = "https://app.akcitgaming.top";
-        // Se ainda não tem a permissão, pede
         if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
         {
             Debug.Log("Pedindo permissão de microfone...");
