@@ -18,11 +18,15 @@ public class ChooseArtController : MonoBehaviour
 
     public GameObject buttonPrefab;
     public Transform content;
-    private Work currentWork;
-    private WorkAPI currentWorkAPI;
+    private Work currentWork = null;
+    private WorkAPI currentWorkAPI = null;
 
     private bool clicked = false;
     public static ChooseArtController _instance;
+
+    public bool isRunningWorkWithAPI = false;
+
+    public bool isRunningWork = false;
 
     public static ChooseArtController Instance
     {
@@ -69,9 +73,9 @@ public class ChooseArtController : MonoBehaviour
             ScratchLayerManager.Instance.isLocal = true;
             ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
 
-            artMat.SetTexture("_MainTex", work.painting[124]);
-            artMat.SetTexture("_NextTex", work.painting[125]);
-            artMat.SetTexture("_Mask", work.masks[124]);
+            artMat.SetTexture("_MainTex", work.painting[0]);
+            artMat.SetTexture("_NextTex", work.painting[1]);
+            artMat.SetTexture("_Mask", work.masks[0]);
 
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
             //FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
@@ -79,6 +83,11 @@ public class ChooseArtController : MonoBehaviour
             transform.GetChild(1).gameObject.SetActive(false);
             StartPractise();
             //transform.GetChild(3).gameObject.SetActive(true);
+
+            RecordingController.Instance.canRecording = false;
+            isRunningWork = true;
+
+            isRunningWorkWithAPI = false;
 
             clicked = true;
             Invoke("ResetClick", 2f);
@@ -115,6 +124,9 @@ public class ChooseArtController : MonoBehaviour
             transform.GetChild(1).gameObject.SetActive(false);
             StartPractise();
 
+            isRunningWork = true;
+            isRunningWorkWithAPI = true;
+
             clicked = true;
             Invoke("ResetClick", 2f);
         }
@@ -131,7 +143,7 @@ public class ChooseArtController : MonoBehaviour
         brush.gameObject.SetActive(false);
     }
 
-    public void CreateNewArt(List<ZipArchiveEntry> arrays, List<ZipArchiveEntry> masks, string authorName, string workName, string workAge, Sprite workImage)
+    public void CreateNewArt(List<ZipArchiveEntry> arrays, List<ZipArchiveEntry> masks, string authorName, string workName, string workAge, int resWidth, int resHeight, Sprite workImage, ArtWorkContext artWorkContext)
     {
         GameObject btn = Instantiate(buttonPrefab, content);
         WorkAPI work = new WorkAPI();
@@ -141,8 +153,11 @@ public class ChooseArtController : MonoBehaviour
         work.author = authorName;
         work.workName = workName;
         work.age = workAge;
+        work.resWidth = resWidth;
+        work.resHeight = resHeight;
 
         work.image = workImage;
+        work.artWorkContext = artWorkContext;
         artsWithApi.Add(work);
         
         string description = workName + "\n" + authorName + ", " + workAge;
@@ -153,9 +168,22 @@ public class ChooseArtController : MonoBehaviour
 
     public void StartPractise()
     {
-        questions.GetChild(0).gameObject.SetActive(true);
+        questions.gameObject.SetActive(true);
         transform.GetChild(3).gameObject.SetActive(false);
-        FindFirstObjectByType<ScratchLayerManager>().SetInitialFrames(currentWork.painting[124], currentWork.painting[125], currentWork.masks[124], currentWork.masks[125], currentWork.painting.Count);
+
+        if (isRunningWorkWithAPI)
+        {
+            ScratchLayerManager.Instance.SetInitialFrames(FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.painting[0]),
+                FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.painting[1]),
+                FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.masks[0]),
+                FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.masks[1]),
+                currentWorkAPI.painting.Count);
+        }
+        else
+        {
+            ScratchLayerManager.Instance.SetInitialFrames(currentWork.painting[0], currentWork.painting[1], currentWork.masks[0], currentWork.masks[1], currentWork.painting.Count);
+        }
+
         brush.SetActive(true);
         tutorial.SetActive(true);
     }

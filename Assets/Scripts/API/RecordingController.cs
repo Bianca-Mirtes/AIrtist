@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Meta.XR.BuildingBlocks.AIBlocks;
+using Newtonsoft.Json;
 using OpenAI;
 using System;
 using System.Collections;
@@ -19,6 +20,13 @@ using UnityEngine.UI;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using WorkData;
+
+[Serializable]
+public class WhisperResponse
+{
+    public string text;
+}
 
 public class RecordingController : MonoBehaviour
 {
@@ -35,11 +43,15 @@ public class RecordingController : MonoBehaviour
     [SerializeField] private Button sendAudioBtn = null;
     [SerializeField] private Button newAudioBtn = null;
     [SerializeField] private Button returnBtn = null;
+
+    public GameObject mainMenu;
+
     private string baseUrl;
-    private string openAIKey;
+    private string openAIKey = "";
     private static RecordingController _instance;
     private bool wasSend = false;
     private bool isWaiting = false;
+    public ArtWorkContext currentArtworkContext;
 
     public bool canRecording = false;
 
@@ -63,7 +75,7 @@ public class RecordingController : MonoBehaviour
 
     void Start()
     {
-        baseUrl = "https://app.akcitgaming.top";
+        baseUrl = "api.akcit.fun";
         if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
         {
             Debug.Log("Pedindo permissão de microfone...");
@@ -76,7 +88,7 @@ public class RecordingController : MonoBehaviour
             Debug.LogError("Nenhum microfone encontrado!");
 
         returnBtn.onClick.AddListener(ReturnStep);
-        sendAudioBtn.onClick.AddListener(() => StartCoroutine(GetAPIKey($"{baseUrl}/apiKey")));
+        sendAudioBtn.onClick.AddListener(SendAudio);
         newAudioBtn.onClick.AddListener(NewAudio);
     }
 
@@ -98,6 +110,10 @@ public class RecordingController : MonoBehaviour
         {
             InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
             InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
+
+            if(devices.Count == 0)
+                return;
+
             devices[0].TryGetFeatureValue(CommonUsages.secondaryButton, out bool isPressed);
 
             if (isPressed && !lastPressed && !isRecording)
@@ -204,8 +220,8 @@ public class RecordingController : MonoBehaviour
         canRecording = false;
         ResetSend();
         description.text = "Press Y to start recording...";
-        transform.GetChild(2).gameObject.SetActive(false);
-        transform.GetChild(0).gameObject.SetActive(true);
+        mainMenu.transform.GetChild(2).gameObject.SetActive(false);
+        mainMenu.transform.GetChild(0).gameObject.SetActive(true);
     }
 
     IEnumerator GetAPIKey(string openAIUrl)
@@ -236,34 +252,18 @@ public class RecordingController : MonoBehaviour
         if (trimmedClip == null)
             return;
 
+        if(trimmedClip.length < 1)
+        {
+            description.text = "Audio too short! Please record again.";
+            return;
+        }
+
         if (!wasSend) 
         {
             // converte para bytes WAV
             byte[] wavData = ConvertToWav(trimmedClip);
 
             StartCoroutine(SendAudioToOpenAI(wavData));
-
-            /*var req = new CreateAudioTranscriptionsRequest
-            {
-                FileData = new FileData() { Data = wavData, Name = "audio.wav" },
-                // File = Application.persistentDataPath + "/" + fileName,
-                Model = "whisper-1",
-                Language = "en"
-            };
-            var res = await openai.CreateAudioTranscription(req);
-
-            // converte para Base64
-            // string base64Audio = Convert.ToBase64String(wavData);
-
-            PaintRequest payload = new PaintRequest {transcription = res.Text == null ? "Generate for me Monalisa of Da Vinci" : res.Text};
-
-            // 4) Serializa para JSON
-            string json = JsonUtility.ToJson(payload);
-
-            string url = $"{baseUrl}/paint";
-            // envia para API
-            StartCoroutine(SendToAPI(json, url));
-            wasSend = true;*/
         }
     }
 
@@ -301,17 +301,14 @@ public class RecordingController : MonoBehaviour
 
             Debug.Log("Texto transcrito: " + response.text);
 
-            // segue seu fluxo normal
             PaintRequest payload = new PaintRequest
             {
-                transcription = response.text == null ? "Generate for me Monalisa of Da Vinci" : response.text
+                transcription = response.text == null || response.text == "you" ? "Generate for me Monalisa of Da Vinci" : response.text
             };
 
             string url = $"{baseUrl}/paint";
             string payloadJson = JsonUtility.ToJson(payload);
-            StartCoroutine(
-                SendToAPI(payloadJson, url)
-            );
+            StartCoroutine(SendToAPI(payloadJson, url));
             wasSend = true;
         }
     }
@@ -397,10 +394,7 @@ public class RecordingController : MonoBehaviour
     {
         description.text = "Downloading new Work...";
 
-        string zipPath = Path.Combine(
-            Application.persistentDataPath,
-            $"{jobID}.zip"
-        );
+        string zipPath = Path.Combine(Application.persistentDataPath, $"{jobID}.zip");
 
         using (UnityWebRequest request = UnityWebRequest.Get(zipUrl))
         {
@@ -418,7 +412,7 @@ public class RecordingController : MonoBehaviour
             long size = new FileInfo(zipPath).Length;
             Debug.Log("ZIP DOWNLOADED SIZE: " + size);
 
-            FindFirstObjectByType<FrameZipLoader>().LoadFromZipPath(zipPath, txtInfos);
+            FindFirstObjectByType<FrameZipLoader>().LoadFromZipPath(zipPath, txtInfos, currentArtworkContext);
 
             description.text = "New work generated! See in \"Choose a work\"";
             spinner.SetActive(false);
@@ -431,6 +425,7 @@ public class RecordingController : MonoBehaviour
     {
         public string job_id;
         public string txtInfos;
+        public ArtWorkContext artwork_context;
     }
 
 
@@ -452,13 +447,6 @@ public class RecordingController : MonoBehaviour
     public class JobStatus
     {
         public string status;
-    }
-
-
-    [Serializable]
-    public class WhisperResponse
-    {
-        public string text;
     }
 
     private void ResetSend()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO.Compression;
 using UnityEngine;
@@ -14,6 +15,17 @@ namespace WorkData
         public string workAge { get; set; }
     }
 
+    [Serializable]
+    public class ArtWorkContext
+    {
+        public string artistName;
+        public string title;
+        public string style;
+        public string genre;
+        public string sourceUrl;
+        public string dimmensions;
+    }
+
     [System.Serializable]
     public class WorkAPI
     {
@@ -26,5 +38,7 @@ namespace WorkData
         public string txtInfos;
         public int resWidth;
         public int resHeight;
+
+        public ArtWorkContext artWorkContext;
     }
 }

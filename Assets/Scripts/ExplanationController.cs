@@ -30,8 +30,10 @@ public class ExplanationController : MonoBehaviour
     public void NextQuestion()
     {
         if (questionsQueue.Count == 0)
+        {
+            RecordingController.Instance.canRecording = true;
             return;
-
+        }
         if (questionsQueue.Count == 1)
         {
             DialogueManager.Instance.StartDialogue(questionsQueue.Dequeue(), 1, currentWork);

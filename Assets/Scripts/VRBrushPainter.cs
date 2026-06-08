@@ -37,6 +37,9 @@ public class VRBrushPainter : MonoBehaviour
         {
             InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
             InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
+            if (devices.Count == 0)
+                return;
+            
             devices[0].TryGetFeatureValue(CommonUsages.trigger, out float triggerValue);
 
             if (triggerValue > 0.2f)

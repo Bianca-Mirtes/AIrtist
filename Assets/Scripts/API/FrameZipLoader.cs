@@ -19,14 +19,14 @@ public class FrameZipLoader : MonoBehaviour
 
     // ================= ENTRY =================
 
-    public void LoadFromZipPath(string zipPath, string txt)
+    public void LoadFromZipPath(string zipPath, string txt, ArtWorkContext artWorkContext)
     {
-        StartCoroutine(LoadRoutine(zipPath, txt));
+        StartCoroutine(LoadRoutine(zipPath, txt, artWorkContext));
     }
 
     // ================= LOADER =================
 
-    IEnumerator LoadRoutine(string zipPath, string txt)
+    IEnumerator LoadRoutine(string zipPath, string txt, ArtWorkContext artWorkContext)
     {
         Debug.Log("📦 Iniciando extração do ZIP...");
 
@@ -83,7 +83,7 @@ public class FrameZipLoader : MonoBehaviour
 
         Infos infos = TXTLoader.Instance.LoadTXT(txt);
 
-        Debug.Log($"📝 Infos carregadas: Autor='{infos.authorName}', Título='{infos.workName}', Ano='{infos.workAge}'");
+        Debug.Log($"📝 Infos carregadas: Autor='{infos.authorName}', Título='{infos.workName}', Ano='{infos.workAge}', Dimensions:{infos.resHeight}x{infos.resWidth}");
 
         Debug.Log("🎨 Criando nova obra no ChooseArtController...");
 
@@ -93,7 +93,10 @@ public class FrameZipLoader : MonoBehaviour
             infos.authorName,
             infos.workName,
             infos.workAge,
-            workImage
+            infos.resWidth,
+            infos.resHeight,
+            workImage,
+            artWorkContext
         );
     }
 

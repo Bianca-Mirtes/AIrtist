@@ -19,8 +19,8 @@ public class ScratchLayerManager : MonoBehaviour
 
     MaterialPropertyBlock mpb;
 
-    private int totalFrames;
-    int globalFrame = 125;
+    public int totalFrames;
+    public int globalFrame = 0;
     public bool isLocal = true;
     //public float diffAmount;
 
@@ -84,8 +84,8 @@ public class ScratchLayerManager : MonoBehaviour
 
         //diffAmount = ComputeDiff();
 
-        activeMask.width = maskCurrent.width;
-        activeMask.height = maskCurrent.height;
+        //activeMask.width = maskCurrent.width;
+        //activeMask.height = maskCurrent.height;
 
         brush.canPaint = true;
 
@@ -113,6 +113,7 @@ public class ScratchLayerManager : MonoBehaviour
             confetti?.Play();
             UI?.SetActive(true);
             brush.canPaint = false;
+            ChooseArtController.Instance.isRunningWork = false;
             ChooseArtController.Instance.ResetBrush();
             return;
         }
