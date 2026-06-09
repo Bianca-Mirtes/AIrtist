@@ -80,11 +80,11 @@ public class ChooseArtController : MonoBehaviour
             artMat.SetTexture("_Mask", work.masks[0]);
 
             FindFirstObjectByType<QuestionsController>().SetQuestions(work.author, work.awnsers);
-            //FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
+            transform.GetChild(3).gameObject.SetActive(true);
+            FindFirstObjectByType<ExplanationController>().SetExplanationStage(work.awnsers, work.image);
 
             transform.GetChild(1).gameObject.SetActive(false);
-            StartPractise();
-            //transform.GetChild(3).gameObject.SetActive(true);
+            //StartPractise();
 
             RecordingController.Instance.canRecording = false;
             isRunningWork = true;
