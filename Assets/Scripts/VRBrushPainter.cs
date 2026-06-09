@@ -119,6 +119,16 @@ public class VRBrushPainter : MonoBehaviour
         paintMat.SetColor("_Color", paintColor);
         paintMat.SetTexture("_Brush", brushTexture);
 
+        paintMat.SetVector(
+            "_TexSize",
+            new Vector4(
+                scratchManager.activeMask.width,
+                scratchManager.activeMask.height,
+                0,
+                0
+            )
+        );
+
         RenderTexture temp = RenderTexture.GetTemporary(
             scratchManager.activeMask.width,
             scratchManager.activeMask.height,

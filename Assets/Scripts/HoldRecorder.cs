@@ -9,6 +9,26 @@ public class HoldRecorder : MonoBehaviour,
 
     private bool recording;
 
+    public bool askBtnNeedToBeDefined = false;
+
+    public GameObject parent;
+
+    private void Update()
+    {
+        if (askBtnNeedToBeDefined)
+        {
+            if (ScratchLayerManager.Instance.isLocal)
+            {
+                parent.gameObject.SetActive(false);
+            }
+            else
+            {
+                parent.gameObject.SetActive(true);
+            }
+            askBtnNeedToBeDefined = false;
+        }
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (recording) return;

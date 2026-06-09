@@ -82,15 +82,68 @@ public class ScratchLayerManager : MonoBehaviour
         maskCurrent = currentMask;
         maskNext = nextMask;
 
-        //diffAmount = ComputeDiff();
+        float aspect = (float)paintingCurrent.width / paintingCurrent.height;
 
-        //activeMask.width = maskCurrent.width;
-        //activeMask.height = maskCurrent.height;
+        target.transform.localScale =
+            new Vector3(aspect, 1f, 1f);
+
+        Debug.Log($"Aspect: {aspect}");
+
+        Debug.Log($"Quad Scale: {target.transform.localScale}");
+
+        Debug.Log(
+            $"Painting Current: {currentPainting.width}x{currentPainting.height}"
+        );
+
+        Debug.Log(
+            $"Mask Current: {currentMask.width}x{currentMask.height}"
+        );
+
+        DebugMaskInfo(maskCurrent);
+
+        if (activeMask != null)
+        {
+            activeMask.Release();
+            Destroy(activeMask);
+        }
+
+        activeMask = new RenderTexture(
+            maskCurrent.width,
+            maskCurrent.height,
+            0,
+            RenderTextureFormat.R8
+        );
+
+        activeMask.Create();
+
+        Debug.Log(
+            $"ActiveMask: {activeMask.width}x{activeMask.height} " +
+            $"Format={activeMask.format}"
+        );
 
         brush.canPaint = true;
 
         ApplyToMaterial();
         brush.analyzer.ConvertToR8(maskCurrent);
+
+    }
+
+    void DebugMaskInfo(Texture2D mask)
+    {
+        Debug.Log(
+            $"Mask: {mask.name}\n" +
+            $"Size: {mask.width}x{mask.height}\n" +
+            $"Format: {mask.format}\n" +
+            $"Mipmaps: {mask.mipmapCount}\n" +
+            $"Readable: {mask.isReadable}"
+        );
+
+        Debug.Log(
+            $"Active RT:\n" +
+            $"Size: {activeMask.width}x{activeMask.height}\n" +
+            $"Format: {activeMask.format}\n" +
+            $"GraphicsFormat: {activeMask.graphicsFormat}"
+        );
     }
 
     public void SetTotalFrames(int value)
@@ -139,8 +192,6 @@ public class ScratchLayerManager : MonoBehaviour
             paintingNext = work.painting[globalFrame + 1];
             maskNext = work.masks[globalFrame + 1];
         }
-
-        //diffAmount = ComputeDiff();
 
         ApplyToMaterial();
         brush.analyzer.ConvertToR8(maskCurrent);

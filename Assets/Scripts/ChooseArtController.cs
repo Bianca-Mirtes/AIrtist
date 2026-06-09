@@ -16,17 +16,19 @@ public class ChooseArtController : MonoBehaviour
     public Material artMat;
     public GameObject brush;
 
+    public HoldRecorder holdRecorder;
+
     public GameObject buttonPrefab;
     public Transform content;
     private Work currentWork = null;
     private WorkAPI currentWorkAPI = null;
 
-    private bool clicked = false;
     public static ChooseArtController _instance;
 
+    [Header("Booleans")]
     public bool isRunningWorkWithAPI = false;
-
     public bool isRunningWork = false;
+    private bool clicked = false;
 
     public static ChooseArtController Instance
     {
@@ -87,6 +89,8 @@ public class ChooseArtController : MonoBehaviour
             RecordingController.Instance.canRecording = false;
             isRunningWork = true;
 
+            holdRecorder.askBtnNeedToBeDefined = true;
+
             isRunningWorkWithAPI = false;
 
             clicked = true;
@@ -123,6 +127,8 @@ public class ChooseArtController : MonoBehaviour
 
             transform.GetChild(1).gameObject.SetActive(false);
             StartPractise();
+
+            holdRecorder.askBtnNeedToBeDefined = true;
 
             isRunningWork = true;
             isRunningWorkWithAPI = true;
@@ -168,11 +174,11 @@ public class ChooseArtController : MonoBehaviour
 
     public void StartPractise()
     {
-        questions.gameObject.SetActive(true);
         transform.GetChild(3).gameObject.SetActive(false);
 
         if (isRunningWorkWithAPI)
         {
+            questions.gameObject.SetActive(false);
             ScratchLayerManager.Instance.SetInitialFrames(FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.painting[0]),
                 FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.painting[1]),
                 FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.masks[0]),
@@ -181,6 +187,7 @@ public class ChooseArtController : MonoBehaviour
         }
         else
         {
+            questions.gameObject.SetActive(true);
             ScratchLayerManager.Instance.SetInitialFrames(currentWork.painting[0], currentWork.painting[1], currentWork.masks[0], currentWork.masks[1], currentWork.painting.Count);
         }
 

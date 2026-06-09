@@ -23,6 +23,8 @@ public class BrushStampAnalyzer
         var scratch = readback.GetRawTextureData<byte>();
         var diff = diffMaskR8.GetRawTextureData<byte>();
 
+        Debug.Log($"Scratch Bytes={scratch.Length} " + $"Diff Bytes={diff.Length}");
+
         int revealed = 0;
         int total = 0;
 
