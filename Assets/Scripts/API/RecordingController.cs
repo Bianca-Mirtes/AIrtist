@@ -33,7 +33,6 @@ public class RecordingController : MonoBehaviour
     private string micDevice;
     private AudioClip recordedClip;
     private AudioClip trimmedClip = null;
-    public AudioClip audioTest;
     private bool isRecording = false;
     private bool lastPressed = false;
     private List<InputDevice> devices = new List<InputDevice>();
@@ -87,9 +86,20 @@ public class RecordingController : MonoBehaviour
         else
             Debug.LogError("Nenhum microfone encontrado!");
 
+        for (int i = 0; i < Microphone.devices.Length; i++)
+        {
+            Debug.Log($"[{i}] {Microphone.devices[i]}");
+        }
+
+        Debug.Log("Selecionado: " + micDevice);
+
+        StartCoroutine(TesteAudio());
+
         returnBtn.onClick.AddListener(ReturnStep);
         sendAudioBtn.onClick.AddListener(SendAudio);
         newAudioBtn.onClick.AddListener(NewAudio);
+
+        description.text = "Press Y to start recording...";
     }
 
     private void Update()
@@ -131,6 +141,10 @@ public class RecordingController : MonoBehaviour
         if(canRecording){
             InputDeviceCharacteristics leftHandCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
             InputDevices.GetDevicesWithCharacteristics(leftHandCharacteristics, devices);
+
+            if(devices.Count == 0)
+                return;
+
             devices[0].TryGetFeatureValue(CommonUsages.secondaryButton, out bool isPressed);
 
             if(isPressed && !lastPressed && !isRecording)
@@ -174,6 +188,32 @@ public class RecordingController : MonoBehaviour
 
         trimmedClip = AudioClip.Create("TrimmedClip", position, recordedClip.channels, 44100, false);
         trimmedClip.SetData(trimmedSamples, 0);
+
+        float[] data = new float[trimmedClip.samples * trimmedClip.channels];
+        trimmedClip.GetData(data, 0);
+
+        float maxAmplitude = 0f;
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            maxAmplitude = Mathf.Max(maxAmplitude, Mathf.Abs(data[i]));
+        }
+
+        Debug.Log("Position: " + position);
+        Debug.Log("Length: " + trimmedClip.length);
+        Debug.Log("Max Amplitude: " + maxAmplitude);
+    }
+
+
+    IEnumerator TesteAudio()
+    {
+        Debug.Log("Mic usado: " + micDevice);
+
+        recordedClip = Microphone.Start(micDevice, false, 40, 44100);
+
+        yield return new WaitForSeconds(1);
+
+        Debug.Log(Microphone.IsRecording(micDevice));
     }
 
     byte[] ConvertToWav(AudioClip clip)
@@ -300,6 +340,7 @@ public class RecordingController : MonoBehaviour
             WhisperResponse response = JsonUtility.FromJson<WhisperResponse>(json);
 
             Debug.Log("Texto transcrito: " + response.text);
+            description.text = response.text;
 
             PaintRequest payload = new PaintRequest
             {
@@ -316,7 +357,7 @@ public class RecordingController : MonoBehaviour
      IEnumerator SendToAPI(string json, string apiUrl)
     {
         isWaiting = true;
-        description.text = "Waiting API response...";
+        //description.text = "Waiting API response...";
         spinner.SetActive(true);
 
         byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
@@ -349,7 +390,7 @@ public class RecordingController : MonoBehaviour
 
     IEnumerator VerifPayload(string verifUrl, string jobID, string txtInfos)
     {
-        description.text = "Checking generation finalization...";
+        //description.text = "Checking generation finalization...";
 
         while (true)
         {
@@ -392,7 +433,7 @@ public class RecordingController : MonoBehaviour
 
     IEnumerator DownloadZip(string zipUrl, string txtInfos, string jobID)
     {
-        description.text = "Downloading new Work...";
+        //description.text = "Downloading new Work...";
 
         string zipPath = Path.Combine(Application.persistentDataPath, $"{jobID}.zip");
 

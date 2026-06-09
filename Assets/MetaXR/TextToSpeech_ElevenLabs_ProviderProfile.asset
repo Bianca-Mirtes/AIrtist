@@ -17,6 +17,6 @@ MonoBehaviour:
   overrideApiKey: 0
   endpoint: https://api.elevenlabs.io
   model: eleven_flash_v2_5
-  voiceId: nXpdpopMmAINggofFXp2
+  voiceId: Xb7hH8MSUJpSbSDYk0k2
   sttLanguage: 
   sttIncludeAudioEvents: 0

@@ -1,3 +1,4 @@
+using Meta.XR.BuildingBlocks.AIBlocks;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -16,6 +17,7 @@ public class DialogueManager : MonoBehaviour
     public static DialogueManager _instance;
     public int currentTrigger;
     public Sprite currentIcon;
+
     public static DialogueManager Instance
     {
         get

@@ -1,11 +1,15 @@
 using Meta.XR.BuildingBlocks.AIBlocks;
-using Meta.XR.Editor.UserInterface.RLDS;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using WorkData;
 
@@ -21,6 +25,15 @@ public class AskController : MonoBehaviour
 
     public TextToSpeechAgent ttsAgent;
 
+    private bool isRecording = false;
+    private bool lastPressed = false;
+    private List<InputDevice> devices = new List<InputDevice>();
+
+    [SerializeField] private GameObject spinner;
+    [SerializeField] private TMP_Text description;
+    [SerializeField] private Button sendAudioBtn = null;
+    [SerializeField] private Button newAudioBtn = null;
+
     void Start()
     {
         baseUrl = "api.akcit.fun";
@@ -35,38 +48,115 @@ public class AskController : MonoBehaviour
             micDevice = Microphone.devices[0];
         else
             Debug.LogError("Nenhum microfone encontrado!");
+
+        sendAudioBtn.onClick.AddListener(SendAudio);
+        newAudioBtn.onClick.AddListener(NewAudio);
+
+        description.text = "Press B to start recording...";
+    }
+
+    private void Update()
+    {
+#if UNITY_EDITOR
+        /*if (canRecording)
+        {
+            if (Input.GetKeyDown(KeyCode.L) && !isRecording)
+            {
+                StartRecording();
+            }
+            if (Input.GetKeyUp(KeyCode.L) && isRecording)
+            {
+                Stop();
+            }
+        }*/
+        if (ChooseArtController.Instance.isRunningWorkWithAPI)
+        {
+            InputDeviceCharacteristics rightHandCharacteristics = InputDeviceCharacteristics.Right | InputDeviceCharacteristics.Controller;
+            InputDevices.GetDevicesWithCharacteristics(rightHandCharacteristics, devices);
+
+            if (devices.Count == 0)
+                return;
+
+            devices[0].TryGetFeatureValue(CommonUsages.secondaryButton, out bool isPressed);
+
+            if (isPressed && !lastPressed && !isRecording)
+            {
+                StartRecording();
+            }
+            if (!isPressed && lastPressed && isRecording)
+            {
+                Stop();
+            }
+
+            lastPressed = isPressed;
+        }
+#else
+        if (ChooseArtController.Instance.isRunningWorkWithAPI)
+        {
+            InputDeviceCharacteristics rightHandCharacteristics = InputDeviceCharacteristics.Right | InputDeviceCharacteristics.Controller;
+            InputDevices.GetDevicesWithCharacteristics(rightHandCharacteristics, devices);
+
+            if (devices.Count == 0)
+                return;
+
+            devices[0].TryGetFeatureValue(CommonUsages.secondaryButton, out bool isPressed);
+
+            if (isPressed && !lastPressed && !isRecording)
+            {
+                StartRecording();
+            }
+            if (!isPressed && lastPressed && isRecording)
+            {
+                Stop();
+            }
+
+            lastPressed = isPressed;
+        }
+#endif
     }
 
     public void StartRecording()
     {
-        if (ChooseArtController.Instance.isRunningWork)
-        {
-            recordedClip = Microphone.Start(micDevice, false, 40, 44100);
-            Debug.Log("Gravação iniciada...");
-        }
+        isRecording = true;
+        recordedClip = Microphone.Start(micDevice, false, 40, 44100);
+        description.text = "Recording...";
+        spinner.SetActive(isRecording);
+        Debug.Log("Gravação iniciada...");
     }
 
     public void Stop()
     {
-        if (ChooseArtController.Instance.isRunningWork)
+        isRecording = false;
+        description.text = "Recording ended!";
+        spinner.SetActive(isRecording);
+
+        // Pega quantos samples realmente foram gravados
+        int position = Microphone.GetPosition(micDevice);
+        Microphone.End(micDevice);
+
+        float[] samples = new float[recordedClip.samples * recordedClip.channels];
+        recordedClip.GetData(samples, 0);
+
+        // Cria um novo clip só com a parte usada
+        float[] trimmedSamples = new float[position * recordedClip.channels];
+        Array.Copy(samples, trimmedSamples, trimmedSamples.Length);
+
+        trimmedClip = AudioClip.Create("TrimmedClip", position, recordedClip.channels, 44100, false);
+        trimmedClip.SetData(trimmedSamples, 0);
+
+        float[] data = new float[trimmedClip.samples * trimmedClip.channels];
+        trimmedClip.GetData(data, 0);
+
+        float maxAmplitude = 0f;
+
+        for (int i = 0; i < data.Length; i++)
         {
-            // Pega quantos samples realmente foram gravados
-            int position = Microphone.GetPosition(micDevice);
-            Microphone.End(micDevice);
-
-            float[] samples = new float[recordedClip.samples * recordedClip.channels];
-            recordedClip.GetData(samples, 0);
-
-            // Cria um novo clip só com a parte usada
-            float[] trimmedSamples = new float[position * recordedClip.channels];
-            Array.Copy(samples, trimmedSamples, trimmedSamples.Length);
-
-            trimmedClip = AudioClip.Create("TrimmedClip", position, recordedClip.channels, 44100, false);
-            trimmedClip.SetData(trimmedSamples, 0);
-
-            if(trimmedClip.length > 1)
-                SendAudio();
+            maxAmplitude = Mathf.Max(maxAmplitude, Mathf.Abs(data[i]));
         }
+
+        Debug.Log("Position: " + position);
+        Debug.Log("Length: " + trimmedClip.length);
+        Debug.Log("Max Amplitude: " + maxAmplitude);
     }
 
     IEnumerator GetAPIKey(string openAIUrl)
@@ -87,6 +177,15 @@ public class AskController : MonoBehaviour
         Debug.Log("OpenAI Key obtained successfully!: " + openAIKey);
 
         SendAudio();
+    }
+
+    private void NewAudio()
+    {
+        if (!isWaiting)
+        {
+            description.text = "Press B to start recording...";
+            wasSend = false;
+        }
     }
 
 
@@ -134,10 +233,23 @@ public class AskController : MonoBehaviour
         if (trimmedClip == null)
             return;
 
+        if (trimmedClip.length < 1)
+        {
+            description.text = "Audio too short! Please record again.";
+            return;
+        }
+
         if (!wasSend)
         {
+            isWaiting = true;
             // converte para bytes WAV
             byte[] wavData = ConvertToWav(trimmedClip);
+
+            // Salvar WAV para teste
+            string path = Path.Combine(Application.persistentDataPath, "teste.wav");
+            File.WriteAllBytes(path, wavData);
+
+            Debug.Log("WAV salvo em: " + path);
 
             StartCoroutine(SendAudioToOpenAI(wavData));
         }
@@ -181,21 +293,26 @@ public class AskController : MonoBehaviour
             {
                 AskRequest payload = new AskRequest
                 {
-                    question = response.text == null ? "Who is the author?" : response.text,
+                    question = response.text == null || response.text == "you" ? "Who is the author?" : response.text,
                     artwork_context = RecordingController.Instance.currentArtworkContext
                 };
+
+                Debug.Log("Texto armazenado: " + payload.question);
+                Debug.Log("ArtworkContext: " + payload.artwork_context);
 
                 string url = $"{baseUrl}/ask";
                 string payloadJson = JsonUtility.ToJson(payload);
                 StartCoroutine(SendToAPI(payloadJson, url));
             }
-            wasSend = true;
         }
     }
 
     IEnumerator SendToAPI(string json, string apiUrl)
     {
-        isWaiting = true;
+        wasSend = true;
+
+        description.text = "Waiting Agent response...";
+        spinner.SetActive(true);
 
         byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
         using (UnityWebRequest request = new UnityWebRequest(apiUrl, "POST"))
@@ -215,8 +332,12 @@ public class AskController : MonoBehaviour
 
             if (request.result == UnityWebRequest.Result.Success)
             {
+                description.text = "Agent Awnser Generated...";
+                spinner.SetActive(false);
+
                 AskResponse askResponse = JsonUtility.FromJson<AskResponse>(request.downloadHandler.text);
                 ttsAgent.SpeakText(askResponse.answer);
+                isWaiting = false;
             }
             else
                 Debug.LogError("Erro API: " + request.error);

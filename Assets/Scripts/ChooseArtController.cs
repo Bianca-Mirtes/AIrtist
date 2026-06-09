@@ -16,8 +16,6 @@ public class ChooseArtController : MonoBehaviour
     public Material artMat;
     public GameObject brush;
 
-    public HoldRecorder holdRecorder;
-
     public GameObject buttonPrefab;
     public Transform content;
     private Work currentWork = null;
@@ -89,8 +87,6 @@ public class ChooseArtController : MonoBehaviour
             RecordingController.Instance.canRecording = false;
             isRunningWork = true;
 
-            holdRecorder.askBtnNeedToBeDefined = true;
-
             isRunningWorkWithAPI = false;
 
             clicked = true;
@@ -112,8 +108,9 @@ public class ChooseArtController : MonoBehaviour
     {
         if (!clicked)
         {
+            isRunningWork = true;
+            isRunningWorkWithAPI = true;
             currentWorkAPI = work;
-            brush.SetActive(true);
             ScratchLayerManager.Instance.isLocal = false;
             ScratchLayerManager.Instance.SetTotalFrames(work.painting.Count);
 
@@ -126,12 +123,9 @@ public class ChooseArtController : MonoBehaviour
             FindFirstObjectByType<ScratchLayerManager>().SetInitialFrames(firstTex, secondTex, firstMask, secondMask, work.painting.Count);
 
             transform.GetChild(1).gameObject.SetActive(false);
+            RecordingController.Instance.canRecording = false;
+
             StartPractise();
-
-            holdRecorder.askBtnNeedToBeDefined = true;
-
-            isRunningWork = true;
-            isRunningWorkWithAPI = true;
 
             clicked = true;
             Invoke("ResetClick", 2f);
@@ -147,6 +141,10 @@ public class ChooseArtController : MonoBehaviour
     {
         brush.gameObject.transform.position = new Vector3(-0.479f, 0.785f, -1.011f);
         brush.gameObject.SetActive(false);
+
+        for (int i = 0; i < questions.childCount; i++) { 
+            questions.GetChild(i).gameObject.SetActive(false);
+        }
     }
 
     public void CreateNewArt(List<ZipArchiveEntry> arrays, List<ZipArchiveEntry> masks, string authorName, string workName, string workAge, int resWidth, int resHeight, Sprite workImage, ArtWorkContext artWorkContext)
@@ -176,18 +174,15 @@ public class ChooseArtController : MonoBehaviour
     {
         transform.GetChild(3).gameObject.SetActive(false);
 
+        Debug.Log("IsRunning API Work: " + isRunningWorkWithAPI);
+
         if (isRunningWorkWithAPI)
         {
-            questions.gameObject.SetActive(false);
-            ScratchLayerManager.Instance.SetInitialFrames(FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.painting[0]),
-                FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.painting[1]),
-                FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.masks[0]),
-                FindFirstObjectByType<FrameZipLoader>().LoadFrame(currentWorkAPI.masks[1]),
-                currentWorkAPI.painting.Count);
+            questions.GetChild(1).gameObject.SetActive(true);
         }
         else
         {
-            questions.gameObject.SetActive(true);
+            questions.GetChild(0).gameObject.SetActive(true);
             ScratchLayerManager.Instance.SetInitialFrames(currentWork.painting[0], currentWork.painting[1], currentWork.masks[0], currentWork.masks[1], currentWork.painting.Count);
         }
 
