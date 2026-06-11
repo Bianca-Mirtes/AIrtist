@@ -36,7 +36,7 @@ public class AskController : MonoBehaviour
 
     void Start()
     {
-        baseUrl = "api.akcit.fun";
+        baseUrl = "https://api.akcit.fun";
 
         if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
         {

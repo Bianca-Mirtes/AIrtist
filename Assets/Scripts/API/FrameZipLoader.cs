@@ -87,7 +87,7 @@ public class FrameZipLoader : MonoBehaviour
 
         Debug.Log("🎨 Criando nova obra no ChooseArtController...");
 
-        Debug.Log("ArtworkContext: " + artWorkContext.genre + " " + artWorkContext.title + " " + artWorkContext.sourceUrl + " " + artWorkContext.artistName + " " + artWorkContext.dimmensions);
+        Debug.Log("ArtworkContext: " + artWorkContext.genre + " " + artWorkContext.title + " " + artWorkContext.sourceUrl + " " + artWorkContext.artistName + " " + artWorkContext.dimensions);
 
         ChooseArtController.Instance.CreateNewArt(
             paintingEntries,

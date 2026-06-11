@@ -23,7 +23,7 @@ namespace WorkData
         public string style;
         public string genre;
         public string sourceUrl;
-        public string dimmensions;
+        public string dimensions;
     }
 
     [System.Serializable]

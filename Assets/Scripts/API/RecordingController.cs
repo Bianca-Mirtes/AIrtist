@@ -74,7 +74,7 @@ public class RecordingController : MonoBehaviour
 
     void Start()
     {
-        baseUrl = "api.akcit.fun";
+        baseUrl = "https://api.akcit.fun";
         if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
         {
             Debug.Log("Pedindo permissão de microfone...");
@@ -354,13 +354,13 @@ public class RecordingController : MonoBehaviour
         }
     }
 
-     IEnumerator SendToAPI(string json, string apiUrl)
+    IEnumerator SendToAPI(string json, string apiUrl)
     {
         isWaiting = true;
-        //description.text = "Waiting API response...";
         spinner.SetActive(true);
 
         byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+
         using (UnityWebRequest request = new UnityWebRequest(apiUrl, "POST"))
         {
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -368,27 +368,59 @@ public class RecordingController : MonoBehaviour
             request.SetRequestHeader("Content-Type", "application/json");
 
             Debug.Log(">>> Sending request");
-            yield return request.SendWebRequest();
-            Debug.Log("<<< Request finished");
+            Debug.Log("PAINT REQUEST JSON: " + json);
 
+            yield return request.SendWebRequest();
+
+            Debug.Log("<<< Request finished");
             Debug.Log($"result = {request.result}");
             Debug.Log($"code = {request.responseCode}");
             Debug.Log($"error = {request.error}");
+            Debug.Log("PAINT RESPONSE BODY: " + request.downloadHandler.text);
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                PaintingJobResponse response = JsonUtility.FromJson<PaintingJobResponse>(request.downloadHandler.text);
+                PaintingJobResponse response =
+                    JsonUtility.FromJson<PaintingJobResponse>(request.downloadHandler.text);
+
+                if (response.artwork_context == null)
+                {
+                    Debug.LogError("ERRO: response.artwork_context veio NULL da API");
+                    yield break;
+                }
+
+                currentArtworkContext = response.artwork_context;
+
+                Debug.Log(
+                    "CURRENT ARTWORK CONTEXT UPDATED: " +
+                    (currentArtworkContext.artistName ?? "NULL artistName") + " - " +
+                    (currentArtworkContext.title ?? "NULL title") + " - " +
+                    (currentArtworkContext.style ?? "NULL style") + " - " +
+                    (currentArtworkContext.genre ?? "NULL genre") + " - " +
+                    (currentArtworkContext.sourceUrl ?? "NULL sourceUrl") + " - " +
+                    (currentArtworkContext.dimensions ?? "NULL dimensions")
+                );
 
                 string verifUrl = $"{baseUrl}/jobs/{response.job_id}";
 
-                StartCoroutine(VerifPayload(verifUrl, response.job_id, response.txtInfos));
+                StartCoroutine(
+                    VerifPayload(
+                        verifUrl,
+                        response.job_id,
+                        response.txtInfos,
+                        response.artwork_context
+                    )
+                );
             }
             else
+            {
                 Debug.LogError("Erro API: " + request.error);
+                Debug.LogError("Erro API Body: " + request.downloadHandler.text);
+            }
         }
     }
 
-    IEnumerator VerifPayload(string verifUrl, string jobID, string txtInfos)
+    IEnumerator VerifPayload(string verifUrl, string jobID, string txtInfos, ArtWorkContext artworkContext)
     {
         //description.text = "Checking generation finalization...";
 
@@ -424,14 +456,14 @@ public class RecordingController : MonoBehaviour
                 if (response.status == "done")
                 {
                     string zipUrl = $"{baseUrl}/jobs/{jobID}/download";
-                    StartCoroutine(DownloadZip(zipUrl, txtInfos, jobID));
+                    StartCoroutine(DownloadZip(zipUrl, txtInfos, jobID, artworkContext));
                     yield break;
                 }
             }
         }
     }
 
-    IEnumerator DownloadZip(string zipUrl, string txtInfos, string jobID)
+    IEnumerator DownloadZip(string zipUrl, string txtInfos, string jobID, ArtWorkContext artworkContext)
     {
         //description.text = "Downloading new Work...";
 
@@ -453,7 +485,21 @@ public class RecordingController : MonoBehaviour
             long size = new FileInfo(zipPath).Length;
             Debug.Log("ZIP DOWNLOADED SIZE: " + size);
 
-            FindFirstObjectByType<FrameZipLoader>().LoadFromZipPath(zipPath, txtInfos, currentArtworkContext);
+            currentArtworkContext = artworkContext;
+
+            Debug.Log(
+                "CONTEXTO ENVIADO PARA FRAME ZIP LOADER: " +
+                (artworkContext.artistName ?? "NULL artistName") + " - " +
+                (artworkContext.title ?? "NULL title") + " - " +
+                (artworkContext.genre ?? "NULL genre") + " - " +
+                (artworkContext.sourceUrl ?? "NULL sourceUrl")
+            );
+
+            FindFirstObjectByType<FrameZipLoader>().LoadFromZipPath(
+                zipPath,
+                txtInfos,
+                artworkContext
+            );
 
             description.text = "New work generated! See in \"Choose a work\"";
             spinner.SetActive(false);
