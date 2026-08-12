@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.Networking;
 using UnityEngine.Rendering;
 using UnityEngine.Scripting;
@@ -81,19 +82,16 @@ public class RecordingController : MonoBehaviour
             Application.RequestUserAuthorization(UserAuthorization.Microphone);
         }
 
+        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Permission.RequestUserPermission(Permission.Microphone);
+        }
+
         if (Microphone.devices.Length > 0)
             micDevice = Microphone.devices[0];
         else
             Debug.LogError("Nenhum microfone encontrado!");
 
-        for (int i = 0; i < Microphone.devices.Length; i++)
-        {
-            Debug.Log($"[{i}] {Microphone.devices[i]}");
-        }
-
-        Debug.Log("Selecionado: " + micDevice);
-
-        StartCoroutine(TesteAudio());
 
         returnBtn.onClick.AddListener(ReturnStep);
         sendAudioBtn.onClick.AddListener(SendAudio);
@@ -191,30 +189,8 @@ public class RecordingController : MonoBehaviour
 
         float[] data = new float[trimmedClip.samples * trimmedClip.channels];
         trimmedClip.GetData(data, 0);
-
-        float maxAmplitude = 0f;
-
-        for (int i = 0; i < data.Length; i++)
-        {
-            maxAmplitude = Mathf.Max(maxAmplitude, Mathf.Abs(data[i]));
-        }
-
-        Debug.Log("Position: " + position);
-        Debug.Log("Length: " + trimmedClip.length);
-        Debug.Log("Max Amplitude: " + maxAmplitude);
     }
 
-
-    IEnumerator TesteAudio()
-    {
-        Debug.Log("Mic usado: " + micDevice);
-
-        recordedClip = Microphone.Start(micDevice, false, 40, 44100);
-
-        yield return new WaitForSeconds(1);
-
-        Debug.Log(Microphone.IsRecording(micDevice));
-    }
 
     byte[] ConvertToWav(AudioClip clip)
     {
@@ -391,8 +367,7 @@ public class RecordingController : MonoBehaviour
 
                 currentArtworkContext = response.artwork_context;
 
-                Debug.Log(
-                    "CURRENT ARTWORK CONTEXT UPDATED: " +
+                Debug.Log( "CURRENT ARTWORK CONTEXT UPDATED: " +
                     (currentArtworkContext.artistName ?? "NULL artistName") + " - " +
                     (currentArtworkContext.title ?? "NULL title") + " - " +
                     (currentArtworkContext.style ?? "NULL style") + " - " +

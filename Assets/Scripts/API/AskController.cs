@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using UnityEngine.XR;
@@ -42,6 +43,11 @@ public class AskController : MonoBehaviour
         {
             Debug.Log("Pedindo permissão de microfone...");
             Application.RequestUserAuthorization(UserAuthorization.Microphone);
+        }
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Permission.RequestUserPermission(Permission.Microphone);
         }
 
         if (Microphone.devices.Length > 0)
@@ -146,17 +152,6 @@ public class AskController : MonoBehaviour
 
         float[] data = new float[trimmedClip.samples * trimmedClip.channels];
         trimmedClip.GetData(data, 0);
-
-        float maxAmplitude = 0f;
-
-        for (int i = 0; i < data.Length; i++)
-        {
-            maxAmplitude = Mathf.Max(maxAmplitude, Mathf.Abs(data[i]));
-        }
-
-        Debug.Log("Position: " + position);
-        Debug.Log("Length: " + trimmedClip.length);
-        Debug.Log("Max Amplitude: " + maxAmplitude);
     }
 
     IEnumerator GetAPIKey(string openAIUrl)
