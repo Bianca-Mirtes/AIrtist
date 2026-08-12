@@ -3,6 +3,10 @@
 **AIrtist** é um simulador em Realidade Virtual (VR) focado em proporcionar uma experiência **natural, guiada e imersiva de pintura**, permitindo que o usuário **recrie passo a passo obras icônicas de artistas famosos**.  
 Na versão atual, o projeto é inteiramente dedicado a **Vincent van Gogh**, utilizando obras pré-geradas como base para a experiência.
 
+<p align="center">
+  <img src="AIrtist_image.png" alt="AIrtist gameplay" width="800"/>
+</p>
+
 ---
 
 ## 🖼️ Obras Disponíveis (Pré-geradas)
